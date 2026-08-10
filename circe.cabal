@@ -20,7 +20,8 @@ library
   hs-source-dirs:   lib
   exposed-modules:
     Codec.Circe.CRC16,
-    Codec.Circe.Main
+    Codec.Circe.Main,
+    Codec.Circe.Pretty
   build-depends:
     base < 5,
     optparse-applicative

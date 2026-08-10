@@ -1,6 +1,7 @@
 module Codec.Circe.Main (circeMain) where
 
 import Codec.Circe.CRC16
+import Codec.Circe.Pretty
 import Data.Word
 import Options.Applicative
 
@@ -9,7 +10,13 @@ circeMain = do
   cli <- circeCLI
   case cli of
     CRC16 cmd -> case cmd of
-      CRC16Table p -> print $ showW16 <$> tableCRC16 p
+      CRC16Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w16 <$> tableCRC16 p]
+
+chunks :: Int -> [a] -> [[a]]
+chunks _ [] = []
+chunks n xs =
+    let (ys, zs) = splitAt n xs
+    in  ys : chunks n zs
 
 data CirceCLI
   = CRC16 CRC16Cmd
