@@ -2,7 +2,7 @@
 
 CRC cyclic-redundancy check
 
-Supports CRC16 & CRC32
+Support CRC16 & CRC32
 
 Usage
 
