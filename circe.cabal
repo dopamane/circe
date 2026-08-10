@@ -1,0 +1,44 @@
+cabal-version:      3.0
+name:               circe
+version:            0.1.0.0
+synopsis:           CRC
+description:        Cyclic-redundancy check
+homepage:           github.com/dopamane/circe
+license:            MIT
+license-file:       LICENSE
+author:             dopamane
+maintainer:         dwc1295@gmail.com
+copyright:          David Cox
+category:           Codec
+build-type:         Simple
+extra-doc-files:    CHANGELOG.md
+                    README.md
+
+library
+  default-language: Haskell2010
+  ghc-options:      -Wall -O2
+  hs-source-dirs:   lib
+  exposed-modules:
+    Codec.Circe.CRC16,
+    MyLib
+  build-depends:    base < 5
+
+executable crc
+  default-language: Haskell2010
+  ghc-options:      -Wall -O2 -threaded
+  hs-source-dirs:   exe
+  main-is:          Main.hs
+  build-depends:
+    base < 5,
+    circe
+
+test-suite test
+  default-language: Haskell2010
+  ghc-options:      -Wall -O2 -threaded
+  hs-source-dirs:   test
+  -- other-modules:
+  type:             exitcode-stdio-1.0
+  main-is:          Main.hs
+  build-depends:
+    base < 5,
+    circe
