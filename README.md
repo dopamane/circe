@@ -8,7 +8,7 @@ Usage
 
 ```
 crc --help
-crc 16 -p 0x1021 -i 0 -s "hello world"
+crc 16 -s "hello world"
 crc 16 -f 100gb.bin
 ```
 
