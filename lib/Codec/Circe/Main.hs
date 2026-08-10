@@ -2,6 +2,7 @@ module Codec.Circe.Main (circeMain) where
 
 import Codec.Circe.CRC16
 import Codec.Circe.Pretty
+import qualified Data.ByteString.Lazy as BS
 import qualified Data.ByteString.Lazy.Char8 as BSC
 import qualified Data.Vector.Storable as V
 import Data.Word
@@ -13,9 +14,12 @@ circeMain = do
   cli <- circeCLI "v0.1.0.0"
   case cli of
     CRC16Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w16 <$> crc16Table p]
-    CRC16 p i _ _ _ s ->
+    CRC16 p i _ _ _ (StringInput s) ->
       let t = V.fromList $ crc16Table p
       in putStrLn $ w16 $ crc16 t i $ BSC.pack s
+    CRC16 p i _ _ _ (FileInput f) ->
+      let t = V.fromList $ crc16Table p
+      in putStrLn . w16 . crc16 t i =<< BS.readFile f
 
 chunks :: Int -> [a] -> [[a]]
 chunks _ [] = []
@@ -24,10 +28,14 @@ chunks n xs =
     in  ys : chunks n zs
 
 data CirceCLI
-  = -- | poly, init, refin, refout, finxor, string
-    CRC16 Word16 Word16 Bool Bool Word16 String
+  = -- | poly, init, refin, refout, finxor, input
+    CRC16 Word16 Word16 Bool Bool Word16 Input
   | -- | poly
     CRC16Table Word16
+
+data Input
+  = StringInput String
+  | FileInput String
 
 -- | run CLI, specify version string
 circeCLI :: String -> IO CirceCLI
@@ -58,14 +66,18 @@ crc16Parser = asum
       <*> refinSwitch
       <*> refoutSwitch
       <*> finXorOpt
-      <*> stringOpt
+      <*> inputOpt
   ]
 
 polyOpt :: Parser Word16
-polyOpt = option auto $ short 'p' <> long "poly" <> metavar "WORD16" <> help "polynomial"
+polyOpt = option auto $
+  short 'p' <> long "poly" <> metavar "WORD16" <> help "polynomial"
+    <> value 0x1021 <> showDefaultWith w16
 
 initOpt :: Parser Word16
-initOpt = option auto $ short 'i' <> long "init" <> metavar "WORD16" <> help "inital value"
+initOpt = option auto $
+  short 'i' <> long "init" <> metavar "WORD16" <> help "inital value"
+    <> value 0 <> showDefaultWith w16
 
 refinSwitch :: Parser Bool
 refinSwitch = switch $ long "ri" <> long "refin" <> help "reflect input"
@@ -75,7 +87,16 @@ refoutSwitch = switch $ long "ro" <> long "refout" <> help "reflect output"
 
 finXorOpt :: Parser Word16
 finXorOpt = option auto $
-  short 'x' <> long "xor" <> metavar "WORD16" <> value 0 <> showDefault <> help "final xor"
+  short 'x' <> long "xor" <> metavar "WORD16"
+    <> value 0 <> showDefaultWith w16 <> help "final xor"
+
+inputOpt :: Parser Input
+inputOpt = StringInput `fmap` stringOpt <|> FileInput `fmap` fileOpt
 
 stringOpt :: Parser String
 stringOpt = strOption $ short 's' <> long "string" <> metavar "INPUT" <> help "Input string"
+
+fileOpt :: Parser String
+fileOpt = strOption $
+  short 'f' <> long "file" <> metavar "PATH" <> completer (bashCompleter "file")
+    <> help "Input binary file"
