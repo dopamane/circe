@@ -10,7 +10,7 @@ circeMain = do
   cli <- circeCLI
   case cli of
     CRC16 cmd -> case cmd of
-      CRC16Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w16 <$> tableCRC16 p]
+      CRC16Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w16 <$> crc16Table p]
 
 chunks :: Int -> [a] -> [[a]]
 chunks _ [] = []
