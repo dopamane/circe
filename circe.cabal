@@ -48,6 +48,7 @@ test-suite test
   other-modules:
     Test.Circe
     Test.Circe.CRC16
+    Test.Circe.CRC32
   build-depends:
     base < 5,
     circe,
