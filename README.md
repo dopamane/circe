@@ -1,4 +1,4 @@
-# CIRCE
+# CIRCE :lotus:
 
 CRC cyclic-redundancy check
 
