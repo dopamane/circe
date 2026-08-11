@@ -5,7 +5,6 @@ import Codec.Circe.CRC32
 import Codec.Circe.Cfg
 import Codec.Circe.Pretty
 import qualified Data.ByteString.Lazy as BS
-import qualified Data.ByteString.Lazy.Char8 as BSC
 import Data.Word
 import Options.Applicative
 
@@ -15,10 +14,9 @@ circeMain = do
   cli <- circeCLI "v0.1.0.0"
   case cli of
     CRC16Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w16 <$> crc16Table p]
-    CRC16 cfg (StringInput s) -> putStrLn $ w16 $ crc16 cfg $ BSC.pack s
-    CRC16 cfg (FileInput f) -> putStrLn . w16 . crc16 cfg =<< BS.readFile f
-    CRC16 cfg StdInput -> putStrLn . w16 . crc16 cfg =<< BSC.getContents
     CRC32Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w32 <$> crc32Table p]
+    CRC16 cfg (Just f) -> putStrLn . w16 . crc16 cfg =<< BS.readFile f
+    CRC16 cfg Nothing  -> putStrLn . w16 . crc16 cfg =<< BS.getContents
 
 chunks :: Int -> [a] -> [[a]]
 chunks _ [] = []
@@ -27,16 +25,10 @@ chunks n xs =
     in  ys : chunks n zs
 
 data CirceCLI
-  = -- | poly, init, refin, refout, finxor, input
-    CRC16 CRC16Cfg Input
+  = CRC16 CRC16Cfg (Maybe String)
   | -- | poly
     CRC16Table Word16
   | CRC32Table Word32
-
-data Input
-  = StringInput String
-  | FileInput String
-  | StdInput
 
 -- | run CLI, specify version string
 circeCLI :: String -> IO CirceCLI
@@ -46,7 +38,7 @@ prefs' :: ParserPrefs
 prefs' = prefs $ showHelpOnError <> showHelpOnEmpty
 
 pinfo :: String -> ParserInfo CirceCLI
-pinfo vStr = info (parser <**> simpleVersioner vStr <**> helper) $ progDesc "CIRCE - CRC"
+pinfo vStr = info (parser <**> simpleVersioner vStr <**> helper) $ progDesc "CIRCE =<< CRC"
 
 parser :: Parser CirceCLI
 parser = hsubparser $ mconcat
@@ -57,7 +49,7 @@ parser = hsubparser $ mconcat
 crc16Parser :: Parser CirceCLI
 crc16Parser = asum
   [ CRC16Table <$> tableOpt 16
-  , CRC16 <$> crc16CfgParser <*> inputOpt
+  , CRC16 <$> crc16CfgParser <*> optional fileArg
   ]
 
 crc32Parser :: Parser CirceCLI
@@ -104,17 +96,7 @@ finXorOpt = option auto $
   short 'x' <> long "xor" <> metavar "WORD16"
     <> value 0 <> showDefaultWith w16 <> help "final xor"
 
-inputOpt :: Parser Input
-inputOpt = asum
-  [ StringInput <$> stringOpt
-  , FileInput <$> fileOpt
-  , flag' StdInput $ long "stdin" <> help "Stream from stdin"
-  ]
-
-stringOpt :: Parser String
-stringOpt = strOption $ short 's' <> long "string" <> metavar "INPUT" <> help "Input string"
-
-fileOpt :: Parser String
-fileOpt = strOption $
-  short 'f' <> long "file" <> metavar "PATH" <> completer (bashCompleter "file")
-    <> help "Input binary file"
+fileArg :: Parser String
+fileArg = strArgument $
+  metavar "FILE" <> completer (bashCompleter "file")
+    <> help "Input binary file. Ignore to stream STDIN."
