@@ -1,21 +1,28 @@
-module Codec.Circe.Reflect (reflect, reflectTable, reflect') where
+module Codec.Circe.Reflect (ref32, ref16, ref8) where
 
 import Data.Bits
-import Data.Vector.Storable (Vector)
-import qualified Data.Vector.Storable as V
+import Data.Word
 
--- | reflect using lookup table
-reflect :: (Integral a, V.Storable a) => Vector a -> a -> a
-reflect t a = t `V.unsafeIndex` fromIntegral a
-
--- | generate a reflected lookup table
-reflectTable :: (Bounded a, Enum a, FiniteBits a, Num a) => [a]
-reflectTable = reflect' <$> [0..maxBound]
-
--- | reflect bits
-reflect' :: FiniteBits a => a -> a
-reflect' a = getIor $ foldMap go [0 .. maxIdx]
+ref32 :: Word32 -> Word32
+ref32 = s1 . s2 . s4 . s8 . s16
   where
-    maxIdx = finiteBitSize a - 1
-    go idx | testBit a idx = Ior $ bit $ maxIdx - idx
-           | otherwise     = mempty
+    s1 n = ((n .&. 0xAAAAAAAA) `shiftR` 1) .|. ((n .&. 0x55555555) `shiftL` 1)
+    s2 n = ((n .&. 0xCCCCCCCC) `shiftR` 2) .|. ((n .&. 0x33333333) `shiftL` 2)
+    s4 n = ((n .&. 0xF0F0F0F0) `shiftR` 4) .|. ((n .&. 0x0F0F0F0F) `shiftL` 4)
+    s8 n = ((n .&. 0xFF00FF00) `shiftR` 8) .|. ((n .&. 0x00FF00FF) `shiftL` 8)
+    s16 n = (n `shiftR` 16) .|. (n `shiftL` 16)
+
+ref16 :: Word16 -> Word16
+ref16 = s1 . s2 . s4 . s8
+  where
+    s1 n = ((n .&. 0xAAAA) `shiftR` 1) .|. ((n .&. 0x5555) `shiftL` 1)
+    s2 n = ((n .&. 0xCCCC) `shiftR` 2) .|. ((n .&. 0x3333) `shiftL` 2)
+    s4 n = ((n .&. 0xF0F0) `shiftR` 4) .|. ((n .&. 0x0F0F) `shiftL` 4)
+    s8 n = (n `shiftR` 8) .|. (n `shiftL` 8)
+
+ref8 :: Word8 -> Word8
+ref8 = s1 . s2 . s4
+  where
+    s1 n = ((n .&. 0xAA) `shiftR` 1) .|. ((n .&. 0x55) `shiftL` 1)
+    s2 n = ((n .&. 0xCC) `shiftR` 2) .|. ((n .&. 0x33) `shiftL` 2)
+    s4 n = (n `shiftR` 4) .|. (n `shiftL` 4)

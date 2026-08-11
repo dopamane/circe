@@ -28,12 +28,9 @@ crc16 cfg = crc16WithCfg t cfg
 crc16WithCfg :: Vector Word16 -> CRC16Cfg -> ByteString -> Word16
 crc16WithCfg t cfg =
   xor (crcFinXor cfg)
-    . applyWhen (crcRefOut cfg) refOut
+    . applyWhen (crcRefOut cfg) ref16
     . crc16Unsafe t (crcInit cfg)
-    . applyWhen (crcRefIn cfg) (BS.map refIn)
-  where
-    refIn = reflect $ V.fromList reflectTable
-    refOut = reflect $ V.fromList reflectTable
+    . applyWhen (crcRefIn cfg) (BS.map ref8)
 
 -- | calculate CRC16 using an efficient lookup table and init value
 crc16Unsafe :: Vector Word16 -> Word16 -> ByteString -> Word16
