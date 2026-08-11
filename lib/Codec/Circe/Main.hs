@@ -1,6 +1,7 @@
 module Codec.Circe.Main (circeMain) where
 
 import Codec.Circe.CRC16
+import Codec.Circe.CRC32
 import Codec.Circe.Pretty
 import qualified Data.ByteString.Lazy as BS
 import qualified Data.ByteString.Lazy.Char8 as BSC
@@ -20,6 +21,7 @@ circeMain = do
     CRC16 p i _ _ _ (FileInput f) ->
       let t = V.fromList $ crc16Table p
       in putStrLn . w16 . crc16 t i =<< BS.readFile f
+    CRC32Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w32 <$> crc32Table p]
 
 chunks :: Int -> [a] -> [[a]]
 chunks _ [] = []
@@ -32,6 +34,7 @@ data CirceCLI
     CRC16 Word16 Word16 Bool Bool Word16 Input
   | -- | poly
     CRC16Table Word16
+  | CRC32Table Word32
 
 data Input
   = StringInput String
@@ -50,16 +53,12 @@ pinfo vStr = info (parser <**> simpleVersioner vStr <**> helper) $ progDesc "CIR
 parser :: Parser CirceCLI
 parser = hsubparser $ mconcat
   [ command "16" $ info crc16Parser $ progDesc "CRC16"
+  , command "32" $ info crc32Parser $ progDesc "CRC32"
   ]
 
 crc16Parser :: Parser CirceCLI
 crc16Parser = asum
-  [ fmap CRC16Table
-      $ option auto
-      $ mconcat
-        [ short 't' <> long "table" <> metavar "POLY"
-        , help "Generate CRC16 lookup table with polynomial"
-        ]
+  [ CRC16Table <$> tableOpt 16
   , CRC16
       <$> polyOpt
       <*> initOpt
@@ -67,6 +66,17 @@ crc16Parser = asum
       <*> refoutSwitch
       <*> finXorOpt
       <*> inputOpt
+  ]
+
+crc32Parser :: Parser CirceCLI
+crc32Parser = asum
+  [ CRC32Table <$> tableOpt 32
+  ]
+
+tableOpt :: (Num a, Read a) => Int -> Parser a
+tableOpt n = option auto $ mconcat
+  [ short 't' <> long "table" <> metavar "POLY"
+  , help $ "Generate CRC" <> show n <> " lookup table with polynomial"
   ]
 
 polyOpt :: Parser Word16
