@@ -7,6 +7,7 @@ module Codec.Circe.CRC16
   ) where
 
 import Codec.Circe.Cfg
+import Codec.Circe.Reflect
 import Data.Bits
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as BS
@@ -39,10 +40,3 @@ crc16WithCfg t cfg =
     . applyWhen (crcRefOut cfg) reflect
     . crc16Unsafe t (crcInit cfg)
     . applyWhen (crcRefIn cfg) (BS.map reflect)
-
-reflect :: FiniteBits a => a -> a
-reflect a = getIor $ foldMap go [0 .. maxIdx]
-  where
-    maxIdx = finiteBitSize a
-    go idx | testBit a idx = Ior $ bit $ maxIdx - idx
-           | otherwise     = mempty
