@@ -2,10 +2,10 @@ module Codec.Circe.Main (circeMain) where
 
 import Codec.Circe.CRC16
 import Codec.Circe.CRC32
+import Codec.Circe.Cfg
 import Codec.Circe.Pretty
 import qualified Data.ByteString.Lazy as BS
 import qualified Data.ByteString.Lazy.Char8 as BSC
-import qualified Data.Vector.Storable as V
 import Data.Word
 import Options.Applicative
 
@@ -15,12 +15,8 @@ circeMain = do
   cli <- circeCLI "v0.1.0.0"
   case cli of
     CRC16Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w16 <$> crc16Table p]
-    CRC16 p i _ _ _ (StringInput s) ->
-      let t = V.fromList $ crc16Table p
-      in putStrLn $ w16 $ crc16Unsafe t i $ BSC.pack s
-    CRC16 p i _ _ _ (FileInput f) ->
-      let t = V.fromList $ crc16Table p
-      in putStrLn . w16 . crc16Unsafe t i =<< BS.readFile f
+    CRC16 cfg (StringInput s) -> putStrLn $ w16 $ crc16 cfg $ BSC.pack s
+    CRC16 cfg (FileInput f) -> putStrLn . w16 . crc16 cfg =<< BS.readFile f
     CRC32Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w32 <$> crc32Table p]
 
 chunks :: Int -> [a] -> [[a]]
@@ -31,7 +27,7 @@ chunks n xs =
 
 data CirceCLI
   = -- | poly, init, refin, refout, finxor, input
-    CRC16 Word16 Word16 Bool Bool Word16 Input
+    CRC16 CRC16Cfg Input
   | -- | poly
     CRC16Table Word16
   | CRC32Table Word32
@@ -59,13 +55,7 @@ parser = hsubparser $ mconcat
 crc16Parser :: Parser CirceCLI
 crc16Parser = asum
   [ CRC16Table <$> tableOpt 16
-  , CRC16
-      <$> polyOpt
-      <*> initOpt
-      <*> refinSwitch
-      <*> refoutSwitch
-      <*> finXorOpt
-      <*> inputOpt
+  , CRC16 <$> crc16CfgParser <*> inputOpt
   ]
 
 crc32Parser :: Parser CirceCLI
@@ -77,6 +67,18 @@ tableOpt :: (Num a, Read a) => Int -> Parser a
 tableOpt n = option auto $ mconcat
   [ short 't' <> long "table" <> metavar "POLY"
   , help $ "Generate CRC" <> show n <> " lookup table with polynomial"
+  ]
+
+crc16CfgParser :: Parser CRC16Cfg
+crc16CfgParser = asum
+  [ flag' crc16CCITZero $ long "ccit-zero"
+  , flag' crc16Modbus $ long "modbus"
+  , CRCCfg
+      <$> polyOpt
+      <*> initOpt
+      <*> refinSwitch
+      <*> refoutSwitch
+      <*> finXorOpt
   ]
 
 polyOpt :: Parser Word16
