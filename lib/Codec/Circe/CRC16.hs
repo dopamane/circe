@@ -1,9 +1,9 @@
 -- | CRC16 utilities
 module Codec.Circe.CRC16
-  ( crc16Table
-  , crc16Unsafe
+  ( crc16
   , crc16WithCfg
-  , reflect
+  , crc16Unsafe
+  , crc16Table
   ) where
 
 import Codec.Circe.Cfg
@@ -18,12 +18,19 @@ import Data.Monoid
 import Data.Semigroup
 import Data.Word
 
--- | generate lookup table using polynomial
-crc16Table :: Word16 -> [Word16]
-crc16Table poly = calc <$> [0..255]
+-- | calculate CRC16 using lookup table generated from config
+crc16 :: CRC16Cfg -> ByteString -> Word16
+crc16 cfg = crc16WithCfg t cfg
   where
-    calc = appEndo (stimes (8 :: Int) $ Endo step) . (`shiftL` 8)
-    step curByte = applyWhen (testBit curByte 15) (`xor` poly) $ curByte `shiftL` 1
+    t = V.fromList $ crc16Table $ crcPoly cfg
+
+-- | calculate CRC16 with extra configuration, table not calculated from poly.
+crc16WithCfg :: Vector Word16 -> CRC16Cfg -> ByteString -> Word16
+crc16WithCfg t cfg =
+  xor (crcFinXor cfg)
+    . applyWhen (crcRefOut cfg) reflect
+    . crc16Unsafe t (crcInit cfg)
+    . applyWhen (crcRefIn cfg) (BS.map reflect)
 
 -- | calculate CRC16 using an efficient lookup table and init value
 crc16Unsafe :: Vector Word16 -> Word16 -> ByteString -> Word16
@@ -33,10 +40,9 @@ crc16Unsafe t = BS.foldl' go
       where
         pos = fromIntegral (crc `shiftR` 8) `xor` b
 
--- | calculate CRC16 with extra configuration, table not calculated from poly.
-crc16WithCfg :: Vector Word16 -> CRC16Cfg -> ByteString -> Word16
-crc16WithCfg t cfg =
-  xor (crcFinXor cfg)
-    . applyWhen (crcRefOut cfg) reflect
-    . crc16Unsafe t (crcInit cfg)
-    . applyWhen (crcRefIn cfg) (BS.map reflect)
+-- | generate lookup table using polynomial
+crc16Table :: Word16 -> [Word16]
+crc16Table poly = calc <$> [0..255]
+  where
+    calc = appEndo (stimes (8 :: Int) $ Endo step) . (`shiftL` 8)
+    step curByte = applyWhen (testBit curByte 15) (`xor` poly) $ curByte `shiftL` 1
