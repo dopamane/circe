@@ -17,6 +17,7 @@ circeMain = do
     CRC16Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w16 <$> crc16Table p]
     CRC16 cfg (StringInput s) -> putStrLn $ w16 $ crc16 cfg $ BSC.pack s
     CRC16 cfg (FileInput f) -> putStrLn . w16 . crc16 cfg =<< BS.readFile f
+    CRC16 cfg StdInput -> putStrLn . w16 . crc16 cfg =<< BSC.getContents
     CRC32Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w32 <$> crc32Table p]
 
 chunks :: Int -> [a] -> [[a]]
@@ -35,6 +36,7 @@ data CirceCLI
 data Input
   = StringInput String
   | FileInput String
+  | StdInput
 
 -- | run CLI, specify version string
 circeCLI :: String -> IO CirceCLI
@@ -103,7 +105,11 @@ finXorOpt = option auto $
     <> value 0 <> showDefaultWith w16 <> help "final xor"
 
 inputOpt :: Parser Input
-inputOpt = StringInput `fmap` stringOpt <|> FileInput `fmap` fileOpt
+inputOpt = asum
+  [ StringInput <$> stringOpt
+  , FileInput <$> fileOpt
+  , flag' StdInput $ long "stdin" <> help "Stream from stdin"
+  ]
 
 stringOpt :: Parser String
 stringOpt = strOption $ short 's' <> long "string" <> metavar "INPUT" <> help "Input string"
