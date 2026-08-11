@@ -14,7 +14,7 @@ tests = testGroup "CRC16"
   ]
 
 basicTest :: TestTree
-basicTest = testCase "basic" $
-  crc16 (V.fromList t) 0 "bosscoxwuzhere" @?= 0xbe42
+basicTest = testCase "crc16Unsafe" $
+  crc16Unsafe (V.fromList t) 0 "bosscoxwuzhere" @?= 0xbe42
   where
     t = crc16Table 0x1021

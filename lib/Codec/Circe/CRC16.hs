@@ -1,7 +1,7 @@
 -- | CRC16 utilities
 module Codec.Circe.CRC16
-  ( crc16
-  , crc16Table
+  ( crc16Table
+  , crc16Unsafe
   ) where
 
 import Data.Bits
@@ -22,8 +22,8 @@ crc16Table poly = calc <$> [0..255]
     step curByte = applyWhen (testBit curByte 15) (`xor` poly) $ curByte `shiftL` 1
 
 -- | calculate CRC16 using an efficient lookup table and init value
-crc16 :: Vector Word16 -> Word16 -> ByteString -> Word16
-crc16 t = BS.foldl' go
+crc16Unsafe :: Vector Word16 -> Word16 -> ByteString -> Word16
+crc16Unsafe t = BS.foldl' go
   where
     go crc b = crc `shiftL` 8 `xor` t `V.unsafeIndex` fromIntegral pos
       where

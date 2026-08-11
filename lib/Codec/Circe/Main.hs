@@ -17,10 +17,10 @@ circeMain = do
     CRC16Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w16 <$> crc16Table p]
     CRC16 p i _ _ _ (StringInput s) ->
       let t = V.fromList $ crc16Table p
-      in putStrLn $ w16 $ crc16 t i $ BSC.pack s
+      in putStrLn $ w16 $ crc16Unsafe t i $ BSC.pack s
     CRC16 p i _ _ _ (FileInput f) ->
       let t = V.fromList $ crc16Table p
-      in putStrLn . w16 . crc16 t i =<< BS.readFile f
+      in putStrLn . w16 . crc16Unsafe t i =<< BS.readFile f
     CRC32Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w32 <$> crc32Table p]
 
 chunks :: Int -> [a] -> [[a]]
