@@ -2,8 +2,11 @@
 module Codec.Circe.CRC16
   ( crc16Table
   , crc16Unsafe
+  , crc16WithCfg
+  , reflect
   ) where
 
+import Codec.Circe.Cfg
 import Data.Bits
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as BS
@@ -28,3 +31,18 @@ crc16Unsafe t = BS.foldl' go
     go crc b = crc `shiftL` 8 `xor` t `V.unsafeIndex` fromIntegral pos
       where
         pos = fromIntegral (crc `shiftR` 8) `xor` b
+
+-- | calculate CRC16 with extra configuration, table not calculated from poly.
+crc16WithCfg :: Vector Word16 -> CRC16Cfg -> ByteString -> Word16
+crc16WithCfg t cfg =
+  xor (crcFinXor cfg)
+    . applyWhen (crcRefOut cfg) reflect
+    . crc16Unsafe t (crcInit cfg)
+    . applyWhen (crcRefIn cfg) (BS.map reflect)
+
+reflect :: FiniteBits a => a -> a
+reflect a = getIor $ foldMap go [0 .. maxIdx]
+  where
+    maxIdx = finiteBitSize a
+    go idx | testBit a idx = Ior $ bit $ maxIdx - idx
+           | otherwise     = mempty
