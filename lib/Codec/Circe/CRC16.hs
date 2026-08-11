@@ -29,16 +29,15 @@ crc16WithCfg :: Vector Word16 -> CRC16Cfg -> ByteString -> Word16
 crc16WithCfg t cfg =
   xor (crcFinXor cfg)
     . applyWhen (crcRefOut cfg) ref16
-    . crc16Unsafe t (crcInit cfg)
-    . applyWhen (crcRefIn cfg) (BS.map ref8)
+    . crc16Unsafe t (crcRefIn cfg) (crcInit cfg)
 
 -- | calculate CRC16 using an efficient lookup table and init value
-crc16Unsafe :: Vector Word16 -> Word16 -> ByteString -> Word16
-crc16Unsafe t = BS.foldl' go
+crc16Unsafe :: Vector Word16 -> Bool -> Word16 -> ByteString -> Word16
+crc16Unsafe t refIn = BS.foldl' go
   where
     go crc b = crc `shiftL` 8 `xor` t `V.unsafeIndex` fromIntegral pos
       where
-        pos = fromIntegral (crc `shiftR` 8) `xor` b
+        pos = fromIntegral (crc `shiftR` 8) `xor` applyWhen refIn ref8 b
 
 -- | generate lookup table using polynomial
 crc16Table :: Word16 -> [Word16]
