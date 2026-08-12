@@ -5,13 +5,15 @@ import Codec.Circe.CRC32
 import Codec.Circe.Cfg
 import Codec.Circe.Pretty
 import qualified Data.ByteString.Lazy as BS
+import Data.Version
 import Data.Word
 import Options.Applicative
+import Paths_circe
 
 -- | main app
 circeMain :: IO ()
 circeMain = do
-  cli <- circeCLI "v0.1.0.0"
+  cli <- circeCLI $ showVersion version
   case cli of
     CRC16Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w16 <$> crc16Table p]
     CRC32Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w32 <$> crc32Table p]

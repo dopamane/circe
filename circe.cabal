@@ -25,6 +25,10 @@ library
     Codec.Circe.Main,
     Codec.Circe.Pretty,
     Codec.Circe.Reflect
+  other-modules:
+    Paths_circe
+  autogen-modules:
+    Paths_circe
   build-depends:
     base < 5,
     bytestring,
