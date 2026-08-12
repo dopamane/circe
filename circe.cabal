@@ -22,17 +22,11 @@ library
     Codec.Circe.CRC16,
     Codec.Circe.CRC32,
     Codec.Circe.Cfg,
-    Codec.Circe.Main,
     Codec.Circe.Pretty,
     Codec.Circe.Reflect
-  other-modules:
-    Paths_circe
-  autogen-modules:
-    Paths_circe
   build-depends:
     base < 5,
     bytestring,
-    optparse-applicative,
     vector
 
 executable crc
@@ -40,9 +34,13 @@ executable crc
   ghc-options:      -Wall -O2 -threaded -with-rtsopts=-N
   hs-source-dirs:   exe
   main-is:          Main.hs
+  other-modules:    Paths_circe
+  autogen-modules:  Paths_circe
   build-depends:
     base < 5,
-    circe
+    bytestring,
+    circe,
+    optparse-applicative,
 
 test-suite test
   default-language: Haskell2010
