@@ -7,9 +7,10 @@ Support CRC16 & CRC32
 Usage
 
 ```
-crc 16 --help               # cli options
-echo "hello world" | crc 16 # stream stdin
-crc 16 100gb.bin            # stream file
+crc 16 --help                  # cli options
+crc 32 --help
+echo -n "hello world" | crc 16 # stream stdin
+crc 16 100gb.bin               # stream file
 ```
 
 Development

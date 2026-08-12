@@ -19,15 +19,18 @@ circeMain = do
     CRC32Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w32 <$> crc32Table p]
     CRC16 cfg (Just f) -> putStrLn . w16 . crc16 cfg =<< BS.readFile f
     CRC16 cfg Nothing  -> putStrLn . w16 . crc16 cfg =<< BS.getContents
+    CRC32 cfg (Just f) -> putStrLn . w32 . crc32 cfg =<< BS.readFile f
+    CRC32 cfg Nothing  -> putStrLn . w32 . crc32 cfg =<< BS.getContents
 
 chunks :: Int -> [a] -> [[a]]
 chunks _ [] = []
-chunks n xs =
-    let (ys, zs) = splitAt n xs
-    in  ys : chunks n zs
+chunks n xs = ys : chunks n zs
+  where
+    (ys, zs) = splitAt n xs
 
 data CirceCLI
   = CRC16 CRC16Cfg (Maybe String)
+  | CRC32 CRC32Cfg (Maybe String)
   | -- | poly
     CRC16Table Word16
   | CRC32Table Word32
@@ -57,6 +60,7 @@ crc16Parser = asum
 crc32Parser :: Parser CirceCLI
 crc32Parser = asum
   [ CRC32Table <$> tableOpt 32
+  , CRC32 <$> crc32CfgParser <*> optional fileArg
   ]
 
 tableOpt :: (Num a, Read a) => Int -> Parser a
@@ -75,6 +79,19 @@ crc16CfgParser = asum
       <*> refinSwitch
       <*> refoutSwitch
       <*> finXorOpt
+  ]
+
+crc32CfgParser :: Parser CRC32Cfg
+crc32CfgParser = asum
+  [ CRCCfg
+      <$> option auto (short 'p' <> long "poly" <> metavar "WORD32" <> help "polynomial")
+      <*> option auto (short 'i' <> long "init" <> metavar "WORD32" <> help "initial value")
+      <*> refinSwitch
+      <*> refoutSwitch
+      <*> option auto (short 'x' <> long "xor" <> metavar "WORD32" <> help "final xor")
+  , flag crc32IEEE crc32IEEE $ long "ieee"
+      <> help ("Default CRC32 configuration "
+                 <> "POLY=0x4C11DB7 INIT=0xFFFFFFFF REFL-IN REFL-OUT FIN-XOR=0xFFFFFFFF")
   ]
 
 polyOpt :: Parser Word16

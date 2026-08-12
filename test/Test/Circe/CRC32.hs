@@ -21,5 +21,7 @@ crc32UnsafeTest = testCase "crc32Unsafe" $
     t = crc32Table 0x4c11db7
 
 crc32Test :: TestTree
-crc32Test = testCase "crc32" $
+crc32Test = testCase "crc32" $ do
   crc32 crc32IEEE "bo$$ cox rulez" @?= 0x75ce60a3
+  crc32 crc32IEEE "hello world"    @?= 0x0d4a1185
+  crc32 crc32IEEE "YOLO DOLO"      @?= 0xa13ee2ed
