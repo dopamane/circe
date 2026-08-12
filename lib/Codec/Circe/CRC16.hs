@@ -44,4 +44,5 @@ crc16Table :: Word16 -> [Word16]
 crc16Table poly = calc <$> [0..255]
   where
     calc = appEndo (stimes (8 :: Int) $ Endo step) . (`shiftL` 8)
-    step curByte = applyWhen (testBit curByte 15) (`xor` poly) $ curByte `shiftL` 1
+      where
+        step curByte = applyWhen (testBit curByte 15) (`xor` poly) $ curByte `shiftL` 1

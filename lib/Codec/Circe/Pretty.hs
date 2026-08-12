@@ -2,6 +2,7 @@
 module Codec.Circe.Pretty
   ( w16
   , w32
+  , table
   ) where
 
 import Data.Bits
@@ -26,3 +27,12 @@ w32 w = "0x" ++ w16' h ++ w16' l
   where
     h = fromIntegral $ w `shiftR` 16
     l = fromIntegral w
+
+table :: [String] -> String
+table = unlines . map unwords . chunks 8
+
+chunks :: Int -> [a] -> [[a]]
+chunks _ [] = []
+chunks n xs = ys : chunks n zs
+  where
+    (ys, zs) = splitAt n xs

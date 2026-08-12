@@ -15,18 +15,12 @@ circeMain :: IO ()
 circeMain = do
   cli <- circeCLI $ showVersion version
   case cli of
-    CRC16Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w16 <$> crc16Table p]
-    CRC32Table p -> putStrLn $ unlines [unwords c | c <- chunks 8 $ w32 <$> crc32Table p]
+    CRC16Table p -> putStrLn $ table $ w16 <$> crc16Table p
+    CRC32Table p -> putStrLn $ table $ w32 <$> crc32Table p
     CRC16 cfg (Just f) -> putStrLn . w16 . crc16 cfg =<< BS.readFile f
     CRC16 cfg Nothing  -> putStrLn . w16 . crc16 cfg =<< BS.getContents
     CRC32 cfg (Just f) -> putStrLn . w32 . crc32 cfg =<< BS.readFile f
     CRC32 cfg Nothing  -> putStrLn . w32 . crc32 cfg =<< BS.getContents
-
-chunks :: Int -> [a] -> [[a]]
-chunks _ [] = []
-chunks n xs = ys : chunks n zs
-  where
-    (ys, zs) = splitAt n xs
 
 data CirceCLI
   = CRC16 CRC16Cfg (Maybe String)
@@ -43,7 +37,8 @@ prefs' :: ParserPrefs
 prefs' = prefs $ showHelpOnError <> showHelpOnEmpty
 
 pinfo :: String -> ParserInfo CirceCLI
-pinfo vStr = info (parser <**> simpleVersioner vStr <**> helper) $ progDesc "CIRCE =<< CRC"
+pinfo vStr = info (parser <**> simpleVersioner vStr <**> helper) $
+  progDesc "CIRCE - cyclic redundancy check"
 
 parser :: Parser CirceCLI
 parser = hsubparser $ mconcat
@@ -90,7 +85,7 @@ crc32CfgParser = asum
       <*> refoutSwitch
       <*> option auto (short 'x' <> long "xor" <> metavar "WORD32" <> help "final xor")
   , flag crc32IEEE crc32IEEE $ long "ieee"
-      <> help ("Default CRC32 configuration "
+      <> help ("Default CRC32 config "
                  <> "POLY=0x4C11DB7 INIT=0xFFFFFFFF REFL-IN REFL-OUT FIN-XOR=0xFFFFFFFF")
   ]
 
