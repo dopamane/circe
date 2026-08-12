@@ -1,7 +1,7 @@
 -- | CRC16 utilities
 module Codec.Circe.CRC16
   ( crc16
-  , crc16WithCfg
+  , crc16WithTable
   , crc16Unsafe
   , crc16Table
   ) where
@@ -20,13 +20,13 @@ import Data.Word
 
 -- | calculate CRC16 using lookup table generated from config
 crc16 :: CRC16Cfg -> ByteString -> Word16
-crc16 cfg = crc16WithCfg t cfg
+crc16 cfg = crc16WithTable t cfg
   where
     t = V.fromList $ crc16Table $ crcPoly cfg
 
--- | calculate CRC16 with extra configuration, table not calculated from poly.
-crc16WithCfg :: Vector Word16 -> CRC16Cfg -> ByteString -> Word16
-crc16WithCfg t cfg =
+-- | calculate CRC16 with precalculated poly table
+crc16WithTable :: Vector Word16 -> CRC16Cfg -> ByteString -> Word16
+crc16WithTable t cfg =
   xor (crcFinXor cfg)
     . applyWhen (crcRefOut cfg) ref16
     . crc16Unsafe t (crcRefIn cfg) (crcInit cfg)

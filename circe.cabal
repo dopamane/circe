@@ -14,6 +14,10 @@ build-type:         Simple
 extra-doc-files:    CHANGELOG.md
                     README.md
 
+source-repository head
+  type:     git
+  location: https://github.com/dopamane/circe
+
 library
   default-language: Haskell2010
   ghc-options:      -Wall -Wunused-packages -O2
@@ -38,7 +42,7 @@ executable crc
   other-modules:    Paths_circe
   autogen-modules:  Paths_circe
   build-depends:
-    base < 5,
+    base,
     bytestring,
     circe,
     optparse-applicative,
@@ -55,7 +59,7 @@ test-suite test
     Test.Circe.CRC32
     Test.Circe.Reflect
   build-depends:
-    base < 5,
+    base,
     circe,
     tasty,
     tasty-hunit,
