@@ -101,4 +101,4 @@ finXorOpt = option auto $
 fileArg :: Parser String
 fileArg = strArgument $
   metavar "FILE" <> completer (bashCompleter "file")
-    <> help "Input binary file. Ignore to stream STDIN."
+    <> help "Optional binary input file otherwise stream STDIN."

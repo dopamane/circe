@@ -7,9 +7,9 @@ Support CRC16 & CRC32
 Usage
 
 ```
-crc --help
-crc 16 -s "hello world"
-crc 16 -f 100gb.bin
+crc 16 --help               # cli options
+echo "hello world" | crc 16 # stream stdin
+crc 16 100gb.bin            # stream file
 ```
 
 Development
@@ -18,6 +18,6 @@ Development
 cabal build
 cabal haddock
 cabal run test
-cabal run crc -- --help
+cabal run crc
 cabal install
 ```
