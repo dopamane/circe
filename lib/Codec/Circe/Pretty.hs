@@ -13,6 +13,7 @@ import Numeric
 w16 :: Word16 -> String
 w16 w = "0x" ++ w16' w
 
+-- | pretty word16 without 0x prefix
 w16' :: Word16 -> String
 w16' w = w3 ++ w2 ++ w1 ++ w0
   where
@@ -28,9 +29,11 @@ w32 w = "0x" ++ w16' h ++ w16' l
     h = fromIntegral $ w `shiftR` 16
     l = fromIntegral w
 
+-- | prettyprint 8 cols across
 table :: [String] -> String
 table = unlines . map unwords . chunks 8
 
+-- | chunk a list
 chunks :: Int -> [a] -> [[a]]
 chunks _ [] = []
 chunks n xs = ys : chunks n zs

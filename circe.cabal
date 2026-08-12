@@ -2,7 +2,7 @@ cabal-version:      3.0
 name:               circe
 version:            0.1.0.0
 synopsis:           CRC
-description:        Cyclic-redundancy check CRC16 CRC32
+description:        Cyclic redundancy check CRC16 CRC32
 homepage:           https://github.com/dopamane/circe
 license:            MIT
 license-file:       LICENSE
@@ -19,6 +19,7 @@ library
   ghc-options:      -Wall -Wunused-packages -O2
   hs-source-dirs:   lib
   exposed-modules:
+    Codec.Circe,
     Codec.Circe.CRC16,
     Codec.Circe.CRC32,
     Codec.Circe.Cfg,
