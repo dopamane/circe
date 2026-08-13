@@ -1,6 +1,7 @@
 -- | CRC configurations
 module Codec.Circe.Cfg
   ( CRCCfg(..)
+  , CRC8Cfg
   , CRC16Cfg
   , crc16CCITZero
   , crc16Modbus
@@ -25,6 +26,8 @@ data CRCCfg a = CRCCfg
   }
   deriving (Eq, Read, Show)
 
+-- | specialied CRC for 'Word8'
+type CRC8Cfg = CRCCfg Word8
 -- | specialized CRC for 'Word16'
 type CRC16Cfg = CRCCfg Word16
 -- | specialized CRC for 'Word32'

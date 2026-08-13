@@ -1,6 +1,12 @@
 -- | CRC utilities.
 module Codec.Circe
-  ( -- ** CRC16
+  ( -- ** CRC8
+    crc8
+  , crc8WithTable
+  , crc8Unsafe
+  , crc8Table
+  , CRC8Cfg
+  , -- ** CRC16
     crc16
   , crc16WithTable
   , crc16Unsafe
@@ -27,6 +33,31 @@ import qualified Data.Vector.Storable as V
 import Data.Function
 import Data.Word
 
+-- | calculate CRC8 using lookup table generated from config
+crc8 :: CRC8Cfg -> ByteString -> Word8
+crc8 cfg = crc8WithTable t cfg
+  where
+    t = V.fromList $ crc8Table $ crcPoly cfg
+
+-- | calculate CRC8 with precalculated poly table
+crc8WithTable :: Vector Word8 -> CRC8Cfg -> ByteString -> Word8
+crc8WithTable t cfg =
+  xor (crcFinXor cfg)
+    . applyWhen (crcRefOut cfg) ref8
+    . crc8Unsafe t (crcRefIn cfg) (crcInit cfg)
+
+-- | calculate CRC8 using efficient lookup table and init value
+crc8Unsafe :: Vector Word8 -> Bool -> Word8 -> ByteString -> Word8
+crc8Unsafe t refIn = BS.foldl' go
+  where
+    go crc b = t `V.unsafeIndex` fromIntegral pos
+      where
+        pos = crc `xor` applyWhen refIn ref8 b
+
+-- | generate lookup table using polynomial
+crc8Table :: Word8 -> [Word8]
+crc8Table = crcTable 8
+
 -- | calculate CRC16 using lookup table generated from config
 crc16 :: CRC16Cfg -> ByteString -> Word16
 crc16 cfg = crc16WithTable t cfg
@@ -50,11 +81,7 @@ crc16Unsafe t refIn = BS.foldl' go
 
 -- | generate lookup table using polynomial
 crc16Table :: Word16 -> [Word16]
-crc16Table poly = calc <$> [0..255]
-  where
-    calc = (!! 8) . iterate step . (`shiftL` 8)
-      where
-        step curByte = applyWhen (testBit curByte 15) (`xor` poly) $ curByte `shiftL` 1
+crc16Table = crcTable 16
 
 -- | calculate CRC32 using lookup table generated from config
 crc32 :: CRC32Cfg -> ByteString -> Word32
@@ -81,8 +108,11 @@ crc32Unsafe t refIn = BS.foldl' go
 
 -- | generate lookup table using polynomial
 crc32Table :: Word32 -> [Word32]
-crc32Table poly = calc <$> [0..255]
+crc32Table = crcTable 32
+
+crcTable :: (Bits a, Enum a, Num a) => Int -> a -> [a]
+crcTable l poly = calc <$> [0..255]
   where
-    calc = (!! 8) . iterate step . (`shiftL` 24)
+    calc = (!! 8) . iterate step . (`shiftL` (l - 8))
       where
-        step curByte = applyWhen (testBit curByte 31) (`xor` poly) $ curByte `shiftL` 1
+        step curByte = applyWhen (testBit curByte $ l - 1) (`xor` poly) $ curByte `shiftL` 1
