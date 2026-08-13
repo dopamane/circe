@@ -53,8 +53,6 @@ test-suite test
   main-is:          Main.hs
   other-modules:
     Test.Circe
-    Test.Circe.CRC16
-    Test.Circe.CRC32
     Test.Circe.Reflect
   build-depends:
     base,
