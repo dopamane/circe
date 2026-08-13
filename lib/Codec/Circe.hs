@@ -26,9 +26,13 @@ module Codec.Circe
   , showCRC32Cfg
   , crc32IEEE
   , -- ** CRC64
-    crc64Table
+    crc64
+  , crc64WithTable
+  , crc64Unsafe
+  , crc64Table
   , CRC64Cfg
   , showCRC64Cfg
+  , crc64ECMA182
   , -- **** CFG
     CRCCfg(..)
   ) where
@@ -120,6 +124,29 @@ crc32Unsafe t refIn = BS.foldl' go
 crc32Table :: Word32 -> [Word32]
 crc32Table = crcTable 32
 
+-- | calculate CRC64 using lookup table generated from config
+crc64 :: CRC64Cfg -> ByteString -> Word64
+crc64 cfg = crc64WithTable t cfg
+  where
+    t = V.fromList $ crc64Table $ crcPoly cfg
+
+-- | calculate CRC64 with precalculated poly table.
+crc64WithTable :: Vector Word64 -> CRC64Cfg -> ByteString -> Word64
+crc64WithTable t cfg =
+  xor (crcFinXor cfg)
+    . applyWhen (crcRefOut cfg) ref64
+    . crc64Unsafe t (crcRefIn cfg) (crcInit cfg)
+
+-- | calculate CRC64 using an efficient lookup table and init value
+crc64Unsafe :: Vector Word64 -> Bool -> Word64 -> ByteString -> Word64
+crc64Unsafe t refIn = BS.foldl' go
+  where
+    go crc b = crc `shiftL` 8 `xor` t `V.unsafeIndex` fromIntegral pos
+      where
+        pos = fromIntegral ((crc `xor` fromIntegral b' `shiftL` 56) `shiftR` 56) :: Word8
+          where
+            b' = applyWhen refIn ref8 b
+
 -- | generate lookup table using polynomial
 crc64Table :: Word64 -> [Word64]
 crc64Table = crcTable 64
@@ -200,3 +227,7 @@ type CRC64Cfg = CRCCfg Word64
 showCRC64Cfg :: CRC64Cfg -> String
 showCRC64Cfg (CRCCfg p i ri ro x) = unwords
   ["POLY", w64 p, "INIT", w64 i, showRefl (ri, ro), "XOR", w64 x]
+
+-- | POLY 0x42F0E1EBA9EA3693 INIT 0 NOREFL XOR 0
+crc64ECMA182 :: CRC64Cfg
+crc64ECMA182 = CRCCfg 0x42F0E1EBA9EA3693 0 False False 0

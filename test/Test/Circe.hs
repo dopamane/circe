@@ -25,6 +25,9 @@ tests = testGroup "Test.Circe"
     [ crc32UnsafeTest
     , crc32Test
     ]
+  , testGroup "CRC64"
+    [ crc64Test
+    ]
   , testGroup "Reflect"
     [ ref8Test
     , ref16Test
@@ -60,6 +63,10 @@ crc32Test = testCase "crc32" $ do
   crc32 crc32IEEE "bo$$ cox rulez" @?= 0x75ce60a3
   crc32 crc32IEEE "hello world"    @?= 0x0d4a1185
   crc32 crc32IEEE "YOLO DOLO"      @?= 0xa13ee2ed
+
+crc64Test :: TestTree
+crc64Test = testCase "crc64" $
+  crc64 crc64ECMA182 "fast cars" @?= 0x5c991e3b22f9bd5f
 
 ref8Test :: TestTree
 ref8Test = testCase "ref8" $

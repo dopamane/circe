@@ -22,11 +22,14 @@ main = do
     CRC16 cfg Nothing  -> putStrLn . w16 . crc16 cfg =<< BS.getContents
     CRC32 cfg (Just f) -> putStrLn . w32 . crc32 cfg =<< BS.readFile f
     CRC32 cfg Nothing  -> putStrLn . w32 . crc32 cfg =<< BS.getContents
+    CRC64 cfg (Just f) -> putStrLn . w64 . crc64 cfg =<< BS.readFile f
+    CRC64 cfg Nothing  -> putStrLn . w64 . crc64 cfg =<< BS.getContents
 
 data CirceCLI
   = CRC8 CRC8Cfg (Maybe String)
   | CRC16 CRC16Cfg (Maybe String)
   | CRC32 CRC32Cfg (Maybe String)
+  | CRC64 CRC64Cfg (Maybe String)
   | CRC8Table  Word8
   | CRC16Table Word16
   | CRC32Table Word32
@@ -71,7 +74,8 @@ crc32Parser = asum
 
 crc64Parser :: Parser CirceCLI
 crc64Parser = asum
-  [ CRC64Table <$> tableOpt 64
+  [ CRC64 <$> crc64CfgParser <*> optional fileArg
+  , CRC64Table <$> tableOpt 64
   ]
 
 tableOpt :: (Num a, Read a) => Int -> Parser a
@@ -96,6 +100,12 @@ crc16CfgParser = asum
 crc32CfgParser :: Parser CRC32Cfg
 crc32CfgParser = asum
   [ flag' crc32IEEE $ long "ieee" <> help (showCRC32Cfg crc32IEEE)
+  , crcCfgParser
+  ]
+
+crc64CfgParser :: Parser CRC64Cfg
+crc64CfgParser = asum
+  [ flag' crc64ECMA182 $ long "ecma-182" <> help (showCRC64Cfg crc64ECMA182)
   , crcCfgParser
   ]
 
