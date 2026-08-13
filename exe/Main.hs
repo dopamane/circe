@@ -86,21 +86,29 @@ tableOpt n = option auto $ mconcat
 
 crc8CfgParser :: Parser CRC8Cfg
 crc8CfgParser = asum
-  [ flag' crc8Cfg $ long "crc8" <> help (showCRC8Cfg crc8Cfg)
+  [ flag' crc8Cfg $ long "crc8" <> help ("DEFAULT " ++ showCRC8Cfg crc8Cfg)
+  , flag' crc88H2F $ long "8h2f" <> help (showCRC8Cfg crc88H2F)
+  , flag' crc8CDMA2k $ long "cdma2k" <> help (showCRC8Cfg crc8CDMA2k)
+  , flag' crc8DARC $ long "darc" <> help (showCRC8Cfg crc8DARC)
+  , flag' crc8WCDMA $ long "wcdma" <> help (showCRC8Cfg crc8WCDMA)
   , crcCfgParser
+  , pure crc8Cfg
   ]
 
 crc16CfgParser :: Parser CRC16Cfg
 crc16CfgParser = asum
-  [ flag' crc16CCITZero $ long "ccit-zero" <> help (showCRC16Cfg crc16CCITZero)
+  [ flag' crc16CCITZero $ long "ccit-zero" <> help ("DEFAULT " ++ showCRC16Cfg crc16CCITZero)
   , flag' crc16Modbus $ long "modbus" <> help (showCRC16Cfg crc16Modbus)
+  , flag' crc16X25 $ long "x25" <> help (showCRC16Cfg crc16X25)
   , crcCfgParser
+  , pure crc16CCITZero
   ]
 
 crc32CfgParser :: Parser CRC32Cfg
 crc32CfgParser = asum
-  [ flag' crc32IEEE $ long "ieee" <> help (showCRC32Cfg crc32IEEE)
+  [ flag' crc32IEEE $ long "ieee" <> help ("DEFAULT " ++ showCRC32Cfg crc32IEEE)
   , crcCfgParser
+  , pure crc32IEEE
   ]
 
 crc64CfgParser :: Parser CRC64Cfg

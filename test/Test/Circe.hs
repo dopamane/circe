@@ -40,6 +40,14 @@ crc8Test = testCaseSteps "crc8" $ \step -> do
   step "crc8"
   crc8 crc8Cfg "alpha and omega" @?= 0x6f
   crc8 crc8Cfg "black and yellow" @?= 0x67
+  step "crc88H2F"
+  crc8 crc88H2F "yamborghini high" @?= 0x02
+  step "crc8CDMA2k"
+  crc8 crc8CDMA2k "asdfgh" @?= 0x79
+  step "crc8DARC"
+  crc8 crc8DARC "i am god" @?= 0x5a
+  step "crc8WCDMA"
+  crc8 crc8WCDMA "city of angels" @?= 0x5d
 
 crc16UnsafeTest :: TestTree
 crc16UnsafeTest = testCase "crc16Unsafe" $
@@ -51,6 +59,8 @@ crc16Test :: TestTree
 crc16Test = testCaseSteps "crc16" $ \step -> do
   step "modbus"
   crc16 crc16Modbus "hello world" @?= 0xddc7
+  step "X25"
+  crc16 crc16X25 "city of angels" @?= 0x5386
 
 crc32UnsafeTest :: TestTree
 crc32UnsafeTest = testCase "crc32Unsafe" $

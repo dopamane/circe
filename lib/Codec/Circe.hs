@@ -8,6 +8,10 @@ module Codec.Circe
   , CRC8Cfg
   , showCRC8Cfg
   , crc8Cfg
+  , crc88H2F
+  , crc8CDMA2k
+  , crc8DARC
+  , crc8WCDMA
   , -- ** CRC16
     crc16
   , crc16WithTable
@@ -17,6 +21,7 @@ module Codec.Circe
   , showCRC16Cfg
   , crc16CCITZero
   , crc16Modbus
+  , crc16X25
   , -- ** CRC32
     crc32
   , crc32WithTable
@@ -33,7 +38,7 @@ module Codec.Circe
   , CRC64Cfg
   , showCRC64Cfg
   , crc64ECMA182
-  , -- **** CFG
+  , -- ** CRCCFG
     CRCCfg(..)
   ) where
 
@@ -60,7 +65,7 @@ crc8WithTable t cfg =
     . applyWhen (crcRefOut cfg) ref8
     . crc8Unsafe t (crcRefIn cfg) (crcInit cfg)
 
--- | calculate CRC8 using efficient lookup table and init value
+-- | calculate CRC8 using efficient lookup table, input reflection, and init value
 crc8Unsafe :: Vector Word8 -> Bool -> Word8 -> ByteString -> Word8
 crc8Unsafe t refIn = BS.foldl' go
   where
@@ -85,7 +90,7 @@ crc16WithTable t cfg =
     . applyWhen (crcRefOut cfg) ref16
     . crc16Unsafe t (crcRefIn cfg) (crcInit cfg)
 
--- | calculate CRC16 using an efficient lookup table and init value
+-- | calculate CRC16 using efficient lookup table, input reflection, and init value
 crc16Unsafe :: Vector Word16 -> Bool -> Word16 -> ByteString -> Word16
 crc16Unsafe t refIn = BS.foldl' go
   where
@@ -110,7 +115,7 @@ crc32WithTable t cfg =
     . applyWhen (crcRefOut cfg) ref32
     . crc32Unsafe t (crcRefIn cfg) (crcInit cfg)
 
--- | calculate CRC32 using an efficient lookup table and init value
+-- | calculate CRC32 using efficient lookup table, input reflection, and init value
 crc32Unsafe :: Vector Word32 -> Bool -> Word32 -> ByteString -> Word32
 crc32Unsafe t refIn = BS.foldl' go
   where
@@ -137,7 +142,7 @@ crc64WithTable t cfg =
     . applyWhen (crcRefOut cfg) ref64
     . crc64Unsafe t (crcRefIn cfg) (crcInit cfg)
 
--- | calculate CRC64 using an efficient lookup table and init value
+-- | calculate CRC64 using efficient lookup table, input reflection, and init value
 crc64Unsafe :: Vector Word64 -> Bool -> Word64 -> ByteString -> Word64
 crc64Unsafe t refIn = BS.foldl' go
   where
@@ -183,22 +188,52 @@ showRefl (ri, ro) = case (ri, ro) of
 
 -- | specialied CRC for 'Word8'
 type CRC8Cfg = CRCCfg Word8
+-- | specialized CRC for 'Word16'
+type CRC16Cfg = CRCCfg Word16
+-- | specialized CRC for 'Word32'
+type CRC32Cfg = CRCCfg Word32
+-- | specialized CRC for 'Word64'
+type CRC64Cfg = CRCCfg Word64
 
 -- | display CRC8 config
 showCRC8Cfg :: CRC8Cfg -> String
 showCRC8Cfg (CRCCfg p i ri ro x) = unwords
   ["POLY", w8 p, "INIT", w8 i, showRefl (ri, ro), "XOR", w8 x]
 
-crc8Cfg :: CRC8Cfg
-crc8Cfg = CRCCfg 0x7 0x0 False False 0x0
-
--- | specialized CRC for 'Word16'
-type CRC16Cfg = CRCCfg Word16
-
 -- | display CRC16 config
 showCRC16Cfg :: CRC16Cfg -> String
 showCRC16Cfg (CRCCfg p i ri ro x) = unwords
   ["POLY", w16 p, "INIT", w16 i, showRefl (ri, ro), "XOR", w16 x]
+
+-- | display CRC32 config
+showCRC32Cfg :: CRC32Cfg -> String
+showCRC32Cfg (CRCCfg p i ri ro x) = unwords
+  ["POLY", w32 p, "INIT", w32 i, showRefl (ri, ro), "XOR", w32 x]
+
+-- | display CRC64 config
+showCRC64Cfg :: CRC64Cfg -> String
+showCRC64Cfg (CRCCfg p i ri ro x) = unwords
+  ["POLY", w64 p, "INIT", w64 i, showRefl (ri, ro), "XOR", w64 x]
+
+-- | POLY 0x7 INIT 0 NOREFL NOXOR
+crc8Cfg :: CRC8Cfg
+crc8Cfg = CRCCfg 0x7 0x0 False False 0x0
+
+-- | POLY 0x2F INIT 0xFF NOREFL XOR 0xFF
+crc88H2F :: CRC8Cfg
+crc88H2F = CRCCfg 0x2f 0xff False False 0xff
+
+-- | POLY 0x9b INIT 0xFF NOREFL NOXOR
+crc8CDMA2k :: CRC8Cfg
+crc8CDMA2k = CRCCfg 0x9b 0xFF False False 0
+
+-- | POLY 0x39 INIT 0 REFLINOUT NOXOR
+crc8DARC :: CRC8Cfg
+crc8DARC = CRCCfg 0x39 0 True True 0
+
+-- | POLY 0x9b INIT 0 REFLINOUT NOXOR
+crc8WCDMA :: CRC8Cfg
+crc8WCDMA = CRCCfg 0x9b 0 True True 0
 
 -- | POLY 0x1021 INIT 0x0000 NOREFL NOXOR
 crc16CCITZero :: CRC16Cfg
@@ -208,25 +243,13 @@ crc16CCITZero = CRCCfg 0x1021 0x0000 False False 0x0000
 crc16Modbus :: CRC16Cfg
 crc16Modbus = CRCCfg 0x8005 0xFFFF True True 0x0000
 
--- | specialized CRC for 'Word32'
-type CRC32Cfg = CRCCfg Word32
-
--- | display CRC32 config
-showCRC32Cfg :: CRC32Cfg -> String
-showCRC32Cfg (CRCCfg p i ri ro x) = unwords
-  ["POLY", w32 p, "INIT", w32 i, showRefl (ri, ro), "XOR", w32 x]
+-- | POLY 0x1021 INIT 0xFFFF REFLINOUT XOR 0xFFFF
+crc16X25 :: CRC16Cfg
+crc16X25 = CRCCfg 0x1021 0xFFFF True True 0xFFFF
 
 -- | POLY 0x4C11DB7 INIT 0xFFFFFFFF REFLINOUT XOR 0xFFFFFFFF
 crc32IEEE :: CRC32Cfg
 crc32IEEE = CRCCfg 0x4C11DB7 0xFFFFFFFF True True 0xFFFFFFFF
-
--- | specialized CRC for 'Word64'
-type CRC64Cfg = CRCCfg Word64
-
--- | display CRC64 config
-showCRC64Cfg :: CRC64Cfg -> String
-showCRC64Cfg (CRCCfg p i ri ro x) = unwords
-  ["POLY", w64 p, "INIT", w64 i, showRefl (ri, ro), "XOR", w64 x]
 
 -- | POLY 0x42F0E1EBA9EA3693 INIT 0 NOREFL XOR 0
 crc64ECMA182 :: CRC64Cfg
