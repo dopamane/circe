@@ -24,8 +24,6 @@ library
   hs-source-dirs:   lib
   exposed-modules:
     Codec.Circe,
-    Codec.Circe.CRC16,
-    Codec.Circe.CRC32,
     Codec.Circe.Cfg,
     Codec.Circe.Pretty,
     Codec.Circe.Reflect
