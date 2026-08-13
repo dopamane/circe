@@ -14,7 +14,10 @@ testCirce = defaultMain tests
 
 tests :: TestTree
 tests = testGroup "Test.Circe"
-  [ testGroup "CRC16"
+  [ testGroup "CRC8"
+    [ crc8Test
+    ]
+  , testGroup "CRC16"
     [ crc16UnsafeTest
     , crc16Test
     ]
@@ -28,6 +31,12 @@ tests = testGroup "Test.Circe"
     , ref32Test
     ]
   ]
+
+crc8Test :: TestTree
+crc8Test = testCaseSteps "crc8" $ \step -> do
+  step "crc8"
+  crc8 crc8Cfg "alpha and omega" @?= 0x6f
+  crc8 crc8Cfg "black and yellow" @?= 0x67
 
 crc16UnsafeTest :: TestTree
 crc16UnsafeTest = testCase "crc16Unsafe" $
