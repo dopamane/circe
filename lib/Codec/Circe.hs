@@ -26,6 +26,10 @@ module Codec.Circe
   , CRC16Cfg
   , showCRC16Cfg
   , crc16CCITZero
+  , crc16Arc
+  , crc16AugCCITT
+  , crc16Buypass
+  , crc16CCITTFalse
   , crc16Modbus
   , crc16X25
   , -- ** CRC32
@@ -184,6 +188,12 @@ data CRCCfg a = CRCCfg
   }
   deriving (Eq, Read, Show)
 
+instance Functor CRCCfg where
+  fmap f (CRCCfg p i ri ro x) = CRCCfg (f p) (f i) ri ro (f x)
+
+showCRCCfg :: CRCCfg String -> String
+showCRCCfg (CRCCfg p i ri ro x) = unwords ["POLY", p, "INIT", i, showRefl (ri, ro), "XOR", x]
+
 -- | display reflection config
 showRefl :: (Bool, Bool) -> String
 showRefl (ri, ro) = case (ri, ro) of
@@ -192,7 +202,7 @@ showRefl (ri, ro) = case (ri, ro) of
   (True,  False) -> "REFLIN"
   (True,  True)  -> "REFLINOUT"
 
--- | specialied CRC for 'Word8'
+-- | specialized CRC for 'Word8'
 type CRC8Cfg = CRCCfg Word8
 -- | specialized CRC for 'Word16'
 type CRC16Cfg = CRCCfg Word16
@@ -203,23 +213,16 @@ type CRC64Cfg = CRCCfg Word64
 
 -- | display CRC8 config
 showCRC8Cfg :: CRC8Cfg -> String
-showCRC8Cfg (CRCCfg p i ri ro x) = unwords
-  ["POLY", w8 p, "INIT", w8 i, showRefl (ri, ro), "XOR", w8 x]
-
+showCRC8Cfg = showCRCCfg . fmap w8
 -- | display CRC16 config
 showCRC16Cfg :: CRC16Cfg -> String
-showCRC16Cfg (CRCCfg p i ri ro x) = unwords
-  ["POLY", w16 p, "INIT", w16 i, showRefl (ri, ro), "XOR", w16 x]
-
+showCRC16Cfg = showCRCCfg . fmap w16
 -- | display CRC32 config
 showCRC32Cfg :: CRC32Cfg -> String
-showCRC32Cfg (CRCCfg p i ri ro x) = unwords
-  ["POLY", w32 p, "INIT", w32 i, showRefl (ri, ro), "XOR", w32 x]
-
+showCRC32Cfg = showCRCCfg . fmap w32
 -- | display CRC64 config
 showCRC64Cfg :: CRC64Cfg -> String
-showCRC64Cfg (CRCCfg p i ri ro x) = unwords
-  ["POLY", w64 p, "INIT", w64 i, showRefl (ri, ro), "XOR", w64 x]
+showCRC64Cfg = showCRCCfg . fmap w64
 
 -- | POLY 0x7 INIT 0 NOREFL NOXOR
 crc8Cfg :: CRC8Cfg
@@ -258,6 +261,18 @@ crc8WCDMA = CRCCfg 0x9b 0 True True 0
 -- | POLY 0x1021 INIT 0x0000 NOREFL NOXOR
 crc16CCITZero :: CRC16Cfg
 crc16CCITZero = CRCCfg 0x1021 0x0000 False False 0x0000
+-- | POLY 0x8005 INIT 0 REFLINOUT XOR 0
+crc16Arc :: CRC16Cfg
+crc16Arc = CRCCfg 0x8005 0 True True 0
+-- | POLY 0x1021 INIT 0x1D0F NOREFL XOR 0
+crc16AugCCITT :: CRC16Cfg
+crc16AugCCITT = CRCCfg 0x1021 0x1D0F False False 0
+-- | POLY 0x8005 INIT 0 NOREFL XOR 0
+crc16Buypass :: CRC16Cfg
+crc16Buypass = CRCCfg 0x8005 0 False False 0
+-- | POLY 0x1021 INIT 0xFFFF NOREFL XOR 0
+crc16CCITTFalse :: CRC16Cfg
+crc16CCITTFalse = CRCCfg 0x1021 0xFFFF False False 0
 -- | POLY 0x8005 INIT 0XFFFF REFLINOUT NOXOR
 crc16Modbus :: CRC16Cfg
 crc16Modbus = CRCCfg 0x8005 0xFFFF True True 0x0000

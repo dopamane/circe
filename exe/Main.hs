@@ -104,6 +104,10 @@ crc8CfgParser = asum
 crc16CfgParser :: Parser CRC16Cfg
 crc16CfgParser = asum
   [ flag' crc16CCITZero $ long "ccit-zero" <> help ("DEFAULT " ++ showCRC16Cfg crc16CCITZero)
+  , flag' crc16Arc $ long "arc" <> help (showCRC16Cfg crc16Arc)
+  , flag' crc16AugCCITT $ long "aug-ccit" <> help (showCRC16Cfg crc16AugCCITT)
+  , flag' crc16Buypass $ long "buypass" <> help (showCRC16Cfg crc16Buypass)
+  , flag' crc16CCITTFalse $ long "ccitt-false" <> help (showCRC16Cfg crc16CCITTFalse)
   , flag' crc16Modbus $ long "modbus" <> help (showCRC16Cfg crc16Modbus)
   , flag' crc16X25 $ long "x25" <> help (showCRC16Cfg crc16X25)
   , crcCfgParser

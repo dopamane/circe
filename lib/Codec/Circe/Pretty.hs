@@ -41,6 +41,7 @@ w32' w = w16' h ++ w16' l
     h = fromIntegral $ w `shiftR` 16
     l = fromIntegral w
 
+-- | @0x01234567abcdefff@
 w64 :: Word64 -> String
 w64 w = "0x" ++ w32' h ++ w32' l
   where
