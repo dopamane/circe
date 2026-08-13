@@ -15,6 +15,7 @@ main = do
     CRC8Table  p -> putStrLn $ table $ w8  <$> crc8Table  p
     CRC16Table p -> putStrLn $ table $ w16 <$> crc16Table p
     CRC32Table p -> putStrLn $ table $ w32 <$> crc32Table p
+    CRC64Table p -> putStrLn $ table $ w64 <$> crc64Table p
     CRC8  cfg (Just f) -> putStrLn . w8  . crc8  cfg =<< BS.readFile f
     CRC8  cfg Nothing  -> putStrLn . w8  . crc8  cfg =<< BS.getContents
     CRC16 cfg (Just f) -> putStrLn . w16 . crc16 cfg =<< BS.readFile f
@@ -29,6 +30,7 @@ data CirceCLI
   | CRC8Table  Word8
   | CRC16Table Word16
   | CRC32Table Word32
+  | CRC64Table Word64
 
 -- | run CLI, specify version string
 circeCLI :: String -> IO CirceCLI
@@ -46,24 +48,30 @@ parser = hsubparser $ mconcat
   [ command "8"  $ info crc8Parser  $ progDesc "CRC8"
   , command "16" $ info crc16Parser $ progDesc "CRC16"
   , command "32" $ info crc32Parser $ progDesc "CRC32"
+  , command "64" $ info crc64Parser $ progDesc "CRC64"
   ]
 
 crc8Parser :: Parser CirceCLI
 crc8Parser = asum
-  [ CRC8Table <$> tableOpt 8
-  , CRC8 <$> crc8CfgParser <*> optional fileArg
+  [ CRC8 <$> crc8CfgParser <*> optional fileArg
+  , CRC8Table <$> tableOpt 8
   ]
 
 crc16Parser :: Parser CirceCLI
 crc16Parser = asum
-  [ CRC16Table <$> tableOpt 16
-  , CRC16 <$> crc16CfgParser <*> optional fileArg
+  [ CRC16 <$> crc16CfgParser <*> optional fileArg
+  , CRC16Table <$> tableOpt 16
   ]
 
 crc32Parser :: Parser CirceCLI
 crc32Parser = asum
-  [ CRC32Table <$> tableOpt 32
-  , CRC32 <$> crc32CfgParser <*> optional fileArg
+  [ CRC32 <$> crc32CfgParser <*> optional fileArg
+  , CRC32Table <$> tableOpt 32
+  ]
+
+crc64Parser :: Parser CirceCLI
+crc64Parser = asum
+  [ CRC64Table <$> tableOpt 64
   ]
 
 tableOpt :: (Num a, Read a) => Int -> Parser a

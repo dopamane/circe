@@ -3,6 +3,7 @@ module Codec.Circe.Pretty
   ( w8
   , w16
   , w32
+  , w64
   , table
   ) where
 
@@ -31,9 +32,19 @@ w16' w = w8' h ++ w8' l
 
 -- | @0x0123abcd@
 w32 :: Word32 -> String
-w32 w = "0x" ++ w16' h ++ w16' l
+w32 w = "0x" ++ w32' w
+
+-- | pretty word32 without 0x prefix
+w32' :: Word32 -> String
+w32' w = w16' h ++ w16' l
   where
     h = fromIntegral $ w `shiftR` 16
+    l = fromIntegral w
+
+w64 :: Word64 -> String
+w64 w = "0x" ++ w32' h ++ w32' l
+  where
+    h = fromIntegral $ w `shiftR` 32
     l = fromIntegral w
 
 -- | prettyprint 8 cols across

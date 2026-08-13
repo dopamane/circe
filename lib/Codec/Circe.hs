@@ -25,6 +25,10 @@ module Codec.Circe
   , CRC32Cfg
   , showCRC32Cfg
   , crc32IEEE
+  , -- ** CRC64
+    crc64Table
+  , CRC64Cfg
+  , showCRC64Cfg
   , -- **** CFG
     CRCCfg(..)
   ) where
@@ -116,6 +120,10 @@ crc32Unsafe t refIn = BS.foldl' go
 crc32Table :: Word32 -> [Word32]
 crc32Table = crcTable 32
 
+-- | generate lookup table using polynomial
+crc64Table :: Word64 -> [Word64]
+crc64Table = crcTable 64
+
 crcTable :: (Bits a, Enum a, Num a) => Int -> a -> [a]
 crcTable l poly = calc <$> [0..255]
   where
@@ -137,6 +145,14 @@ data CRCCfg a = CRCCfg
     -- ^ final xor
   }
   deriving (Eq, Read, Show)
+
+-- | display reflection config
+showRefl :: (Bool, Bool) -> String
+showRefl (ri, ro) = case (ri, ro) of
+  (False, False) -> "NOREFL"
+  (False, True)  -> "REFLOUT"
+  (True,  False) -> "REFLIN"
+  (True,  True)  -> "REFLINOUT"
 
 -- | specialied CRC for 'Word8'
 type CRC8Cfg = CRCCfg Word8
@@ -173,14 +189,14 @@ showCRC32Cfg :: CRC32Cfg -> String
 showCRC32Cfg (CRCCfg p i ri ro x) = unwords
   ["POLY", w32 p, "INIT", w32 i, showRefl (ri, ro), "XOR", w32 x]
 
--- | display reflection config
-showRefl :: (Bool, Bool) -> String
-showRefl (ri, ro) = case (ri, ro) of
-  (False, False) -> "NOREFL"
-  (False, True)  -> "REFLOUT"
-  (True,  False) -> "REFLIN"
-  (True,  True)  -> "REFLINOUT"
-
 -- | POLY 0x4C11DB7 INIT 0xFFFFFFFF REFLINOUT XOR 0xFFFFFFFF
 crc32IEEE :: CRC32Cfg
 crc32IEEE = CRCCfg 0x4C11DB7 0xFFFFFFFF True True 0xFFFFFFFF
+
+-- | specialized CRC for 'Word64'
+type CRC64Cfg = CRCCfg Word64
+
+-- | display CRC64 config
+showCRC64Cfg :: CRC64Cfg -> String
+showCRC64Cfg (CRCCfg p i ri ro x) = unwords
+  ["POLY", w64 p, "INIT", w64 i, showRefl (ri, ro), "XOR", w64 x]

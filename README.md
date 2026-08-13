@@ -2,16 +2,14 @@
 
 CRC cyclic redundancy check
 
-Support CRC16 & CRC32
+Support CRC8, CRC16, CRC32, and CRC64
 
 Usage
 
 ```
-crc 8  --help                  # crc options
-crc 16 --help
-crc 32 --help
-echo -n "hello world" | crc 16 # stream stdin
-crc 16 100gb.bin               # stream file
+crc (8|16|32|64) --help                    # crc options
+echo -n "hello world" | crc 16 --ccit-zero # stream stdin
+crc 16 --modbus 100gb.bin                  # stream file
 ```
 
 Development
