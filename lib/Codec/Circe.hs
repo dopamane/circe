@@ -21,9 +21,10 @@ module Codec.Circe
   , crc32Table
   , CRC32Cfg
   , crc32IEEE
+  , -- **** CFG
+    CRCCfg(..)
   ) where
 
-import Codec.Circe.Cfg
 import Codec.Circe.Reflect
 import Data.Bits
 import Data.ByteString.Lazy (ByteString)
@@ -116,3 +117,37 @@ crcTable l poly = calc <$> [0..255]
     calc = (!! 8) . iterate step . (`shiftL` (l - 8))
       where
         step curByte = applyWhen (testBit curByte $ l - 1) (`xor` poly) $ curByte `shiftL` 1
+
+-- | CRC configuration parameters
+data CRCCfg a = CRCCfg
+  { crcPoly :: a
+    -- ^ polynomial
+  , crcInit :: a
+    -- ^ initial value
+  , crcRefIn :: Bool
+    -- ^ reflect input
+  , crcRefOut :: Bool
+    -- ^ reflect output
+  , crcFinXor :: a
+    -- ^ final xor
+  }
+  deriving (Eq, Read, Show)
+
+-- | specialied CRC for 'Word8'
+type CRC8Cfg = CRCCfg Word8
+-- | specialized CRC for 'Word16'
+type CRC16Cfg = CRCCfg Word16
+-- | specialized CRC for 'Word32'
+type CRC32Cfg = CRCCfg Word32
+
+-- | POLY 0x1021 INIT 0x0000 NOREFL NOXOR
+crc16CCITZero :: CRC16Cfg
+crc16CCITZero = CRCCfg 0x1021 0x0000 False False 0x0000
+
+-- | POLY 0x8005 INIT 0XFFFF REFLINOUT NOXOR
+crc16Modbus :: CRC16Cfg
+crc16Modbus = CRCCfg 0x8005 0xFFFF True True 0x0000
+
+-- | POLY 0x4C11DB7 INIT 0xFFFFFFFF REFLINOUT XOR 0xFFFFFFFF
+crc32IEEE :: CRC32Cfg
+crc32IEEE = CRCCfg 0x4C11DB7 0xFFFFFFFF True True 0xFFFFFFFF
