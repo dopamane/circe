@@ -7,7 +7,8 @@ Support CRC16 & CRC32
 Usage
 
 ```
-crc 16 --help                  # crc options
+crc 8  --help                  # crc options
+crc 16 --help
 crc 32 --help
 echo -n "hello world" | crc 16 # stream stdin
 crc 16 100gb.bin               # stream file
