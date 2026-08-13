@@ -12,18 +12,22 @@ main :: IO ()
 main = do
   cli <- circeCLI $ showVersion version
   case cli of
+    CRC8Table  p -> putStrLn $ table $ w8  <$> crc8Table  p
     CRC16Table p -> putStrLn $ table $ w16 <$> crc16Table p
     CRC32Table p -> putStrLn $ table $ w32 <$> crc32Table p
+    CRC8  cfg (Just f) -> putStrLn . w8  . crc8  cfg =<< BS.readFile f
+    CRC8  cfg Nothing  -> putStrLn . w8  . crc8  cfg =<< BS.getContents
     CRC16 cfg (Just f) -> putStrLn . w16 . crc16 cfg =<< BS.readFile f
     CRC16 cfg Nothing  -> putStrLn . w16 . crc16 cfg =<< BS.getContents
     CRC32 cfg (Just f) -> putStrLn . w32 . crc32 cfg =<< BS.readFile f
     CRC32 cfg Nothing  -> putStrLn . w32 . crc32 cfg =<< BS.getContents
 
 data CirceCLI
-  = CRC16 CRC16Cfg (Maybe String)
+  = CRC8 CRC8Cfg (Maybe String)
+  | CRC16 CRC16Cfg (Maybe String)
   | CRC32 CRC32Cfg (Maybe String)
-  | -- | poly
-    CRC16Table Word16
+  | CRC8Table  Word8
+  | CRC16Table Word16
   | CRC32Table Word32
 
 -- | run CLI, specify version string
@@ -39,8 +43,15 @@ pinfo vStr = info (parser <**> simpleVersioner vStr <**> helper) $
 
 parser :: Parser CirceCLI
 parser = hsubparser $ mconcat
-  [ command "16" $ info crc16Parser $ progDesc "CRC16"
+  [ command "8"  $ info crc8Parser  $ progDesc "CRC8"
+  , command "16" $ info crc16Parser $ progDesc "CRC16"
   , command "32" $ info crc32Parser $ progDesc "CRC32"
+  ]
+
+crc8Parser :: Parser CirceCLI
+crc8Parser = asum
+  [ CRC8Table <$> tableOpt 8
+  , CRC8 <$> crc8CfgParser <*> optional fileArg
   ]
 
 crc16Parser :: Parser CirceCLI
@@ -61,51 +72,39 @@ tableOpt n = option auto $ mconcat
   , help $ "Generate CRC" <> show n <> " lookup table with polynomial"
   ]
 
+crc8CfgParser :: Parser CRC8Cfg
+crc8CfgParser = asum
+  [ flag' crc8Cfg $ long "crc8" <> help (showCRC8Cfg crc8Cfg)
+  , crcCfgParser
+  ]
+
 crc16CfgParser :: Parser CRC16Cfg
 crc16CfgParser = asum
-  [ flag' crc16CCITZero $ long "ccit-zero"
-  , flag' crc16Modbus $ long "modbus"
-  , CRCCfg
-      <$> polyOpt
-      <*> initOpt
-      <*> refinSwitch
-      <*> refoutSwitch
-      <*> finXorOpt
+  [ flag' crc16CCITZero $ long "ccit-zero" <> help (showCRC16Cfg crc16CCITZero)
+  , flag' crc16Modbus $ long "modbus" <> help (showCRC16Cfg crc16Modbus)
+  , crcCfgParser
   ]
 
 crc32CfgParser :: Parser CRC32Cfg
 crc32CfgParser = asum
-  [ CRCCfg
-      <$> option auto (short 'p' <> long "poly" <> metavar "WORD32" <> help "polynomial")
-      <*> option auto (short 'i' <> long "init" <> metavar "WORD32" <> help "initial value")
-      <*> refinSwitch
-      <*> refoutSwitch
-      <*> option auto (short 'x' <> long "xor" <> metavar "WORD32" <> help "final xor")
-  , flag crc32IEEE crc32IEEE $ long "ieee"
-      <> help ("Default CRC32 config "
-                 <> "POLY=0x4C11DB7 INIT=0xFFFFFFFF REFL-IN REFL-OUT FIN-XOR=0xFFFFFFFF")
+  [ flag' crc32IEEE $ long "ieee" <> help (showCRC32Cfg crc32IEEE)
+  , crcCfgParser
   ]
 
-polyOpt :: Parser Word16
-polyOpt = option auto $
-  short 'p' <> long "poly" <> metavar "WORD16" <> help "polynomial"
-    <> value 0x1021 <> showDefaultWith w16
-
-initOpt :: Parser Word16
-initOpt = option auto $
-  short 'i' <> long "init" <> metavar "WORD16" <> help "inital value"
-    <> value 0 <> showDefaultWith w16
+crcCfgParser :: Read a => Parser (CRCCfg a)
+crcCfgParser =
+  CRCCfg
+    <$> option auto (short 'p' <> long "poly" <> help "polynomial")
+    <*> option auto (short 'i' <> long "init" <> help "initial value")
+    <*> refinSwitch
+    <*> refoutSwitch
+    <*> option auto (short 'x' <> long "xor" <> help "final xor")
 
 refinSwitch :: Parser Bool
 refinSwitch = switch $ long "ri" <> long "refin" <> help "reflect input"
 
 refoutSwitch :: Parser Bool
 refoutSwitch = switch $ long "ro" <> long "refout" <> help "reflect output"
-
-finXorOpt :: Parser Word16
-finXorOpt = option auto $
-  short 'x' <> long "xor" <> metavar "WORD16"
-    <> value 0 <> showDefaultWith w16 <> help "final xor"
 
 fileArg :: Parser String
 fileArg = strArgument $

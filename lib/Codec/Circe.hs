@@ -6,12 +6,15 @@ module Codec.Circe
   , crc8Unsafe
   , crc8Table
   , CRC8Cfg
+  , showCRC8Cfg
+  , crc8Cfg
   , -- ** CRC16
     crc16
   , crc16WithTable
   , crc16Unsafe
   , crc16Table
   , CRC16Cfg
+  , showCRC16Cfg
   , crc16CCITZero
   , crc16Modbus
   , -- ** CRC32
@@ -20,11 +23,13 @@ module Codec.Circe
   , crc32Unsafe
   , crc32Table
   , CRC32Cfg
+  , showCRC32Cfg
   , crc32IEEE
   , -- **** CFG
     CRCCfg(..)
   ) where
 
+import Codec.Circe.Pretty
 import Codec.Circe.Reflect
 import Data.Bits
 import Data.ByteString.Lazy (ByteString)
@@ -135,10 +140,22 @@ data CRCCfg a = CRCCfg
 
 -- | specialied CRC for 'Word8'
 type CRC8Cfg = CRCCfg Word8
+
+-- | display CRC8 config
+showCRC8Cfg :: CRC8Cfg -> String
+showCRC8Cfg (CRCCfg p i ri ro x) = unwords
+  ["POLY", w8 p, "INIT", w8 i, showRefl (ri, ro), "XOR", w8 x]
+
+crc8Cfg :: CRC8Cfg
+crc8Cfg = CRCCfg 0x7 0x0 False False 0x0
+
 -- | specialized CRC for 'Word16'
 type CRC16Cfg = CRCCfg Word16
--- | specialized CRC for 'Word32'
-type CRC32Cfg = CRCCfg Word32
+
+-- | display CRC16 config
+showCRC16Cfg :: CRC16Cfg -> String
+showCRC16Cfg (CRCCfg p i ri ro x) = unwords
+  ["POLY", w16 p, "INIT", w16 i, showRefl (ri, ro), "XOR", w16 x]
 
 -- | POLY 0x1021 INIT 0x0000 NOREFL NOXOR
 crc16CCITZero :: CRC16Cfg
@@ -147,6 +164,22 @@ crc16CCITZero = CRCCfg 0x1021 0x0000 False False 0x0000
 -- | POLY 0x8005 INIT 0XFFFF REFLINOUT NOXOR
 crc16Modbus :: CRC16Cfg
 crc16Modbus = CRCCfg 0x8005 0xFFFF True True 0x0000
+
+-- | specialized CRC for 'Word32'
+type CRC32Cfg = CRCCfg Word32
+
+-- | display CRC32 config
+showCRC32Cfg :: CRC32Cfg -> String
+showCRC32Cfg (CRCCfg p i ri ro x) = unwords
+  ["POLY", w32 p, "INIT", w32 i, showRefl (ri, ro), "XOR", w32 x]
+
+-- | display reflection config
+showRefl :: (Bool, Bool) -> String
+showRefl (ri, ro) = case (ri, ro) of
+  (False, False) -> "NOREFL"
+  (False, True)  -> "REFLOUT"
+  (True,  False) -> "REFLIN"
+  (True,  True)  -> "REFLINOUT"
 
 -- | POLY 0x4C11DB7 INIT 0xFFFFFFFF REFLINOUT XOR 0xFFFFFFFF
 crc32IEEE :: CRC32Cfg
