@@ -90,6 +90,12 @@ crc8CfgParser = asum
   , flag' crc88H2F $ long "8h2f" <> help (showCRC8Cfg crc88H2F)
   , flag' crc8CDMA2k $ long "cdma2k" <> help (showCRC8Cfg crc8CDMA2k)
   , flag' crc8DARC $ long "darc" <> help (showCRC8Cfg crc8DARC)
+  , flag' crc8DVBS2 $ long "dvbs2" <> help (showCRC8Cfg crc8DVBS2)
+  , flag' crc8EBU $ long "ebu" <> help (showCRC8Cfg crc8EBU)
+  , flag' crc8ICode $ long "icode" <> help (showCRC8Cfg crc8ICode)
+  , flag' crc8ITU $ long "itu" <> help (showCRC8Cfg crc8ITU)
+  , flag' crc8Maxim $ long "maxim" <> help (showCRC8Cfg crc8Maxim)
+  , flag' crc8ROHC $ long "rohc" <> help (showCRC8Cfg crc8ROHC)
   , flag' crc8WCDMA $ long "wcdma" <> help (showCRC8Cfg crc8WCDMA)
   , crcCfgParser
   , pure crc8Cfg

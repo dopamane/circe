@@ -46,6 +46,8 @@ crc8Test = testCaseSteps "crc8" $ \step -> do
   crc8 crc8CDMA2k "asdfgh" @?= 0x79
   step "crc8DARC"
   crc8 crc8DARC "i am god" @?= 0x5a
+  step "crc8ITU"
+  crc8 crc8ITU "OMG itz GODZILLA!" @?= 0xf9
   step "crc8WCDMA"
   crc8 crc8WCDMA "city of angels" @?= 0x5d
 

@@ -11,6 +11,12 @@ module Codec.Circe
   , crc88H2F
   , crc8CDMA2k
   , crc8DARC
+  , crc8DVBS2
+  , crc8EBU
+  , crc8ICode
+  , crc8ITU
+  , crc8Maxim
+  , crc8ROHC
   , crc8WCDMA
   , -- ** CRC16
     crc16
@@ -218,19 +224,33 @@ showCRC64Cfg (CRCCfg p i ri ro x) = unwords
 -- | POLY 0x7 INIT 0 NOREFL NOXOR
 crc8Cfg :: CRC8Cfg
 crc8Cfg = CRCCfg 0x7 0x0 False False 0x0
-
 -- | POLY 0x2F INIT 0xFF NOREFL XOR 0xFF
 crc88H2F :: CRC8Cfg
 crc88H2F = CRCCfg 0x2f 0xff False False 0xff
-
 -- | POLY 0x9b INIT 0xFF NOREFL NOXOR
 crc8CDMA2k :: CRC8Cfg
 crc8CDMA2k = CRCCfg 0x9b 0xFF False False 0
-
 -- | POLY 0x39 INIT 0 REFLINOUT NOXOR
 crc8DARC :: CRC8Cfg
 crc8DARC = CRCCfg 0x39 0 True True 0
-
+-- | POLY 0xD5 INIT 0 NOREFL XOR 0
+crc8DVBS2 :: CRC8Cfg
+crc8DVBS2 = CRCCfg 0xD5 0 False False 0
+-- | POLY 0x1D INIT 0xFF REFLINOUT XOR 0
+crc8EBU :: CRC8Cfg
+crc8EBU = CRCCfg 0x1D 0xFF True True 0
+-- | POLY 0x1D INIT 0xFD NOREFL XOR 0
+crc8ICode :: CRC8Cfg
+crc8ICode = CRCCfg 0x1D 0xFD False False 0
+-- | POLY 0x07 INIT 0x00 NOREFL XOR 0x55
+crc8ITU :: CRC8Cfg
+crc8ITU = CRCCfg 0x07 0x00 False False 0x55
+-- | POLY 0x31 INIT 0 REFLINOUT XOR 0
+crc8Maxim :: CRC8Cfg
+crc8Maxim = CRCCfg 0x31 0 True True 0
+-- | POLY 0x07 INIT 0xFF REFLINOUT XOR 0
+crc8ROHC :: CRC8Cfg
+crc8ROHC = CRCCfg 0x07 0xFF True True 0
 -- | POLY 0x9b INIT 0 REFLINOUT NOXOR
 crc8WCDMA :: CRC8Cfg
 crc8WCDMA = CRCCfg 0x9b 0 True True 0
@@ -238,11 +258,9 @@ crc8WCDMA = CRCCfg 0x9b 0 True True 0
 -- | POLY 0x1021 INIT 0x0000 NOREFL NOXOR
 crc16CCITZero :: CRC16Cfg
 crc16CCITZero = CRCCfg 0x1021 0x0000 False False 0x0000
-
 -- | POLY 0x8005 INIT 0XFFFF REFLINOUT NOXOR
 crc16Modbus :: CRC16Cfg
 crc16Modbus = CRCCfg 0x8005 0xFFFF True True 0x0000
-
 -- | POLY 0x1021 INIT 0xFFFF REFLINOUT XOR 0xFFFF
 crc16X25 :: CRC16Cfg
 crc16X25 = CRCCfg 0x1021 0xFFFF True True 0xFFFF
