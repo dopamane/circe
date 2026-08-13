@@ -51,9 +51,7 @@ test-suite test
   hs-source-dirs:   test
   type:             exitcode-stdio-1.0
   main-is:          Main.hs
-  other-modules:
-    Test.Circe
-    Test.Circe.Reflect
+  other-modules:    Test.Circe
   build-depends:
     base,
     circe,

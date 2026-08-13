@@ -1,9 +1,11 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BinaryLiterals     #-}
+{-# LANGUAGE NumericUnderscores #-}
+{-# LANGUAGE OverloadedStrings  #-}
 module Test.Circe (testCirce) where
 
 import Codec.Circe
+import Codec.Circe.Reflect
 import qualified Data.Vector.Storable as V
-import qualified Test.Circe.Reflect as Reflect
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -20,7 +22,11 @@ tests = testGroup "Test.Circe"
     [ crc32UnsafeTest
     , crc32Test
     ]
-  , Reflect.tests
+  , testGroup "Reflect"
+    [ ref8Test
+    , ref16Test
+    , ref32Test
+    ]
   ]
 
 crc16UnsafeTest :: TestTree
@@ -45,3 +51,18 @@ crc32Test = testCase "crc32" $ do
   crc32 crc32IEEE "bo$$ cox rulez" @?= 0x75ce60a3
   crc32 crc32IEEE "hello world"    @?= 0x0d4a1185
   crc32 crc32IEEE "YOLO DOLO"      @?= 0xa13ee2ed
+
+ref8Test :: TestTree
+ref8Test = testCase "ref8" $
+  ref8 0b1011_1110
+   @?= 0b0111_1101
+
+ref16Test :: TestTree
+ref16Test = testCase "ref16" $
+  ref16 0b1010_1111_0000_0011
+    @?= 0b1100_0000_1111_0101
+
+ref32Test :: TestTree
+ref32Test = testCase "ref32" $
+  ref32 0b1110_0111_0000_0000_1111_1111_1010_1010
+    @?= 0b0101_0101_1111_1111_0000_0000_1110_0111
