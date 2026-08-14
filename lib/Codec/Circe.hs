@@ -9,8 +9,10 @@ module Codec.Circe
     crc16, crc16WithTable, crc16Table
   , CRC16Cfg, showCRC16Cfg
   , crc16CCITZero, crc16Arc, crc16AugCCITT, crc16Buypass, crc16CCITTFalse
-  , crc16CDMA2k, crc16DDS110, crc16DECTR, crc16DECTX
-  , crc16Modbus, crc16X25
+  , crc16CDMA2k, crc16DDS110, crc16DECTR, crc16DECTX, crc16DNP, crc16EN13757
+  , crc16Genibus, crc16Maxim, crc16MCRF4XX, crc16Riello, crc16T10DIF
+  , crc16Teledisk, crc16TMS37157, crc16USB, crc16CRCA, crc16Kermit
+  , crc16Modbus, crc16X25, crc16XModem
   , -- ** CRC32
     crc32, crc32WithTable, crc32Table
   , CRC32Cfg, showCRC32Cfg
@@ -19,7 +21,7 @@ module Codec.Circe
     crc64, crc64WithTable, crc64Table
   , CRC64Cfg, showCRC64Cfg
   , crc64ECMA182
-  , -- ** CRCCFG
+  , -- ** CRCCfg
     CRCCfg(..)
   , -- ** Unsafe
     crc, crcWithTable, crcUnsafe, crcTable
@@ -220,12 +222,51 @@ crc16DECTR = CRCCfg 0x0589 0 False False 1
 -- | POLY 0x0589 INIT 0 NOREFL XOR 0
 crc16DECTX :: CRC16Cfg
 crc16DECTX = CRCCfg 0x0589 0 False False 0
+-- | POLY 0x3D65 INIT 0 REFLINOUT XOR 0xFFFF
+crc16DNP :: CRC16Cfg
+crc16DNP = CRCCfg 0x3D65 0 True True 0xFFFF
+-- | POLY 0x3D65 INIT 0 NOREFL XOR 0xFFFF
+crc16EN13757 :: CRC16Cfg
+crc16EN13757 = CRCCfg 0x3D65 0 False False 0xFFFF
+-- | POLY 0x1021 INIT 0xFFFF NOREFL XOR 0xFFFF
+crc16Genibus :: CRC16Cfg
+crc16Genibus = CRCCfg 0x1021 0xFFFF False False 0xFFFF
+-- | POLY 0x8005 INIT 0 REFLINOUT XOR 0xFFFF
+crc16Maxim :: CRC16Cfg
+crc16Maxim = CRCCfg 0x8005 0 True True 0xFFFF
+-- | POLY 0x1021 INIT 0xFFFF REFLINOUT XOR 0
+crc16MCRF4XX :: CRC16Cfg
+crc16MCRF4XX = CRCCfg 0x1021 0xFFFF True True 0
+-- | POLY 0x1021 INIT 0xB2AA REFLINOUT XOR 0
+crc16Riello :: CRC16Cfg
+crc16Riello = CRCCfg 0x1021 0xB2AA True True 0
+-- | POLY 0x8BB7 INIT 0 NOREFL XOR 0
+crc16T10DIF :: CRC16Cfg
+crc16T10DIF = CRCCfg 0x8BB7 0 False False 0
+-- | POLY 0xA097 INIT 0 NOREFL XOR 0
+crc16Teledisk :: CRC16Cfg
+crc16Teledisk = CRCCfg 0xA097 0 False False 0
+-- | POLY 0x1021 INIT 0x89EC REFLINOUT XOR 0
+crc16TMS37157 :: CRC16Cfg
+crc16TMS37157 = CRCCfg 0x1021 0x89EC True True 0
+-- | POLY 0x8005 INIT 0xFFFF REFLINOUT XOR 0xFFFF
+crc16USB :: CRC16Cfg
+crc16USB = CRCCfg 0x8005 0xFFFF True True 0xFFFF
+-- | POLY 0x1021 INIT 0xC6C6 REFLINOUT XOR 0
+crc16CRCA :: CRC16Cfg
+crc16CRCA = CRCCfg 0x1021 0xC6C6 True True 0
+-- | POLY 0x1021 INIT 0 REFLINOUT XOR 0
+crc16Kermit :: CRC16Cfg
+crc16Kermit = CRCCfg 0x1021 0 True True 0
 -- | POLY 0x8005 INIT 0XFFFF REFLINOUT NOXOR
 crc16Modbus :: CRC16Cfg
 crc16Modbus = CRCCfg 0x8005 0xFFFF True True 0x0000
 -- | POLY 0x1021 INIT 0xFFFF REFLINOUT XOR 0xFFFF
 crc16X25 :: CRC16Cfg
 crc16X25 = CRCCfg 0x1021 0xFFFF True True 0xFFFF
+-- | POLY 0x1021 INIT 0 NOREFL XOR 0
+crc16XModem :: CRC16Cfg
+crc16XModem = CRCCfg 0x1021 0 False False 0
 
 -- | POLY 0x4C11DB7 INIT 0xFFFFFFFF REFLINOUT XOR 0xFFFFFFFF
 crc32IEEE :: CRC32Cfg
