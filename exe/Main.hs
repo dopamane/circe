@@ -134,14 +134,21 @@ crc16CfgParser = asum
 crc32CfgParser :: Parser CRC32Cfg
 crc32CfgParser = asum
   [ flag' crc32IEEE $ long "ieee" <> help ("DEFAULT " ++ showCRC32Cfg crc32IEEE)
+  , flag' crc32BZIP2 $ long "bzip2" <> help (showCRC32Cfg crc32BZIP2)
+  , flag' crc32MPEG2 $ long "mpeg2" <> help (showCRC32Cfg crc32MPEG2)
+  , flag' crc32POSIX $ long "posix" <> help (showCRC32Cfg crc32POSIX)
   , crcCfgParser
   , pure crc32IEEE
   ]
 
 crc64CfgParser :: Parser CRC64Cfg
 crc64CfgParser = asum
-  [ flag' crc64ECMA182 $ long "ecma-182" <> help (showCRC64Cfg crc64ECMA182)
+  [ flag' crc64ECMA182 $ long "ecma-182" <> help ("DEFAULT " ++ showCRC64Cfg crc64ECMA182)
+  , flag' crc64GoISO $ long "go-iso" <> help (showCRC64Cfg crc64GoISO)
+  , flag' crc64WE $ long "we" <> help (showCRC64Cfg crc64WE)
+  , flag' crc64XZ $ long "xz" <> help (showCRC64Cfg crc64XZ)
   , crcCfgParser
+  , pure crc64ECMA182
   ]
 
 crcCfgParser :: Read a => Parser (CRCCfg a)
