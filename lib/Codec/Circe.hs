@@ -1,56 +1,27 @@
 -- | CRC utilities.
 module Codec.Circe
   ( -- ** CRC8
-    crc8
-  , crc8WithTable
-  , crc8Table
-  , CRC8Cfg
-  , showCRC8Cfg
-  , crc8Cfg
-  , crc88H2F
-  , crc8CDMA2k
-  , crc8DARC
-  , crc8DVBS2
-  , crc8EBU
-  , crc8ICode
-  , crc8ITU
-  , crc8Maxim
-  , crc8ROHC
-  , crc8WCDMA
+    crc8, crc8WithTable, crc8Table
+  , CRC8Cfg, showCRC8Cfg
+  , crc8Cfg, crc88H2F, crc8CDMA2k, crc8DARC, crc8DVBS2, crc8EBU, crc8ICode
+  , crc8ITU, crc8Maxim, crc8ROHC, crc8WCDMA
   , -- ** CRC16
-    crc16
-  , crc16WithTable
-  , crc16Table
-  , CRC16Cfg
-  , showCRC16Cfg
-  , crc16CCITZero
-  , crc16Arc
-  , crc16AugCCITT
-  , crc16Buypass
-  , crc16CCITTFalse
-  , crc16Modbus
-  , crc16X25
+    crc16, crc16WithTable, crc16Table
+  , CRC16Cfg, showCRC16Cfg
+  , crc16CCITZero, crc16Arc, crc16AugCCITT, crc16Buypass, crc16CCITTFalse
+  , crc16Modbus, crc16X25
   , -- ** CRC32
-    crc32
-  , crc32WithTable
-  , crc32Table
-  , CRC32Cfg
-  , showCRC32Cfg
+    crc32, crc32WithTable, crc32Table
+  , CRC32Cfg, showCRC32Cfg
   , crc32IEEE
   , -- ** CRC64
-    crc64
-  , crc64WithTable
-  , crc64Table
-  , CRC64Cfg
-  , showCRC64Cfg
+    crc64, crc64WithTable, crc64Table
+  , CRC64Cfg, showCRC64Cfg
   , crc64ECMA182
   , -- ** CRCCFG
     CRCCfg(..)
   , -- ** Unsafe
-    crc
-  , crcWithTable
-  , crcUnsafe
-  , crcTable
+    crc, crcWithTable, crcUnsafe, crcTable
   ) where
 
 import Codec.Circe.Pretty
