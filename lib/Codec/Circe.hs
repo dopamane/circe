@@ -9,6 +9,7 @@ module Codec.Circe
     crc16, crc16WithTable, crc16Table
   , CRC16Cfg, showCRC16Cfg
   , crc16CCITZero, crc16Arc, crc16AugCCITT, crc16Buypass, crc16CCITTFalse
+  , crc16CDMA2k, crc16DDS110, crc16DECTR, crc16DECTX
   , crc16Modbus, crc16X25
   , -- ** CRC32
     crc32, crc32WithTable, crc32Table
@@ -207,6 +208,18 @@ crc16Buypass = CRCCfg 0x8005 0 False False 0
 -- | POLY 0x1021 INIT 0xFFFF NOREFL XOR 0
 crc16CCITTFalse :: CRC16Cfg
 crc16CCITTFalse = CRCCfg 0x1021 0xFFFF False False 0
+-- | POLY 0xC867 INIT 0xFFFF NOREFL XOR 0
+crc16CDMA2k :: CRC16Cfg
+crc16CDMA2k = CRCCfg 0xC867 0xFFFF False False 0
+-- | POLY 0x8005 INIT 0x800D NOREFL XOR 0
+crc16DDS110 :: CRC16Cfg
+crc16DDS110 = CRCCfg 0x8005 0x800D False False 0
+-- | POLY 0x0589 INIT 0 NOREFL XOR 1
+crc16DECTR :: CRC16Cfg
+crc16DECTR = CRCCfg 0x0589 0 False False 1
+-- | POLY 0x0589 INIT 0 NOREFL XOR 0
+crc16DECTX :: CRC16Cfg
+crc16DECTX = CRCCfg 0x0589 0 False False 0
 -- | POLY 0x8005 INIT 0XFFFF REFLINOUT NOXOR
 crc16Modbus :: CRC16Cfg
 crc16Modbus = CRCCfg 0x8005 0xFFFF True True 0x0000
