@@ -53,7 +53,7 @@ crc8Test = testCaseSteps "crc8" $ \step -> do
 
 crc16UnsafeTest :: TestTree
 crc16UnsafeTest = testCase "crc16Unsafe" $
-  crc16Unsafe (V.fromList t) False 0 "bosscoxwuzhere" @?= 0xbe42
+  crcUnsafe (V.fromList t) False 0 "bosscoxwuzhere" @?= 0xbe42
   where
     t = crc16Table 0x1021
 
@@ -66,7 +66,7 @@ crc16Test = testCaseSteps "crc16" $ \step -> do
 
 crc32UnsafeTest :: TestTree
 crc32UnsafeTest = testCase "crc32Unsafe" $
-  crc32Unsafe (V.fromList t) False 0 "hello world" @?= 0x737af2ae
+  crcUnsafe (V.fromList t) False 0 "hello world" @?= 0x737af2ae
   where
     t = crc32Table 0x4c11db7
 
