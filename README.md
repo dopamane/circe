@@ -9,7 +9,7 @@ Usage
 ```
 crc (8|16|32|64) --help        # crc options
 echo -n "hello world" | crc 16 # stream stdin
-crc 32 100gb.bin               # stream file
+crc 32 10gb.bin                # stream file
 ```
 
 Development

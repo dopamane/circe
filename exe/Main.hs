@@ -2,6 +2,7 @@ module Main (main) where
 
 import Codec.Circe
 import Codec.Circe.Pretty
+import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as BS
 import Data.Version
 import Data.Word
@@ -16,14 +17,14 @@ main = do
     CRC16Table p -> putStrLn $ table $ w16 <$> crc16Table p
     CRC32Table p -> putStrLn $ table $ w32 <$> crc32Table p
     CRC64Table p -> putStrLn $ table $ w64 <$> crc64Table p
-    CRC8  cfg (Just f) -> putStrLn . w8  . crc8  cfg =<< BS.readFile f
-    CRC8  cfg Nothing  -> putStrLn . w8  . crc8  cfg =<< BS.getContents
-    CRC16 cfg (Just f) -> putStrLn . w16 . crc16 cfg =<< BS.readFile f
-    CRC16 cfg Nothing  -> putStrLn . w16 . crc16 cfg =<< BS.getContents
-    CRC32 cfg (Just f) -> putStrLn . w32 . crc32 cfg =<< BS.readFile f
-    CRC32 cfg Nothing  -> putStrLn . w32 . crc32 cfg =<< BS.getContents
-    CRC64 cfg (Just f) -> putStrLn . w64 . crc64 cfg =<< BS.readFile f
-    CRC64 cfg Nothing  -> putStrLn . w64 . crc64 cfg =<< BS.getContents
+    CRC8  cfg fM -> putStrLn . w8  . crc8  cfg =<< input fM
+    CRC16 cfg fM -> putStrLn . w16 . crc16 cfg =<< input fM
+    CRC32 cfg fM -> putStrLn . w32 . crc32 cfg =<< input fM
+    CRC64 cfg fM -> putStrLn . w64 . crc64 cfg =<< input fM
+
+input :: Maybe String -> IO ByteString
+input Nothing     = BS.getContents
+input (Just file) = BS.readFile file
 
 data CirceCLI
   = CRC8 CRC8Cfg (Maybe String)

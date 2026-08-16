@@ -23,6 +23,7 @@ module Codec.Circe
   , crc64ECMA182, crc64GoISO, crc64WE, crc64XZ
   , -- ** CRCCfg
     CRCCfg(..)
+  , showCRCCfg
   , -- ** Unsafe
     crc, crcWithTable, crcUnsafe, crcTable
   ) where
@@ -111,7 +112,7 @@ crcTable poly = calc <$> [0..255]
     l    = fromIntegral (finiteBitSize poly) :: Int
     calc = (!! 8) . iterate step . (`shiftL` (l - 8))
       where
-        step curByte = applyWhen (testBit curByte $ l - 1) (`xor` poly) $ curByte `shiftL` 1
+        step curByte = applyWhen (testBit curByte $ l - 1) (xor poly) $ curByte `shiftL` 1
 
 -- | CRC configuration parameters
 data CRCCfg a = CRCCfg
@@ -131,6 +132,7 @@ data CRCCfg a = CRCCfg
 instance Functor CRCCfg where
   fmap f (CRCCfg p i ri ro x) = CRCCfg (f p) (f i) ri ro (f x)
 
+-- | pretty cfg
 showCRCCfg :: CRCCfg String -> String
 showCRCCfg (CRCCfg p i ri ro x) = unwords ["POLY", p, "INIT", i, showRefl (ri, ro), "XOR", x]
 
