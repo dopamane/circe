@@ -1,8 +1,6 @@
 -- | CRC utilities.
 module Codec.Circe
-  ( -- ** Config
-    CRCCfg(..)
-  , -- ** CRC8
+  ( -- ** CRC8
     crc8, crc8WithTable, crc8Table
   , CRC8Cfg, showCRC8Cfg
   , crc8Cfg, crc88H2F, crc8CDMA2k, crc8DARC, crc8DVBS2, crc8EBU, crc8ICode
@@ -23,6 +21,8 @@ module Codec.Circe
     crc64, crc64WithTable, crc64Table
   , CRC64Cfg, showCRC64Cfg
   , crc64ECMA182, crc64GoISO, crc64WE, crc64XZ
+  , -- ** Config
+    CRCCfg(..)
   ) where
 
 import Codec.Circe.Internal
