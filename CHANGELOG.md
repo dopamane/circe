@@ -1,5 +1,9 @@
 # Revision history for circe
 
+## 1.1.0.0 -- 8-16-26
+
+* Vector table generator
+
 ## 1.0.0.0 -- 8-16-26
 
 * Split internal and external API
