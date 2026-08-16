@@ -53,5 +53,4 @@ test-suite test
     base,
     circe,
     tasty,
-    tasty-hunit,
-    vector
+    tasty-hunit

@@ -27,7 +27,7 @@ stream Nothing     f = putStrLn . f =<< BS.getContents
 stream (Just file) f = putStrLn . f =<< BS.readFile file
 
 data CirceCLI
-  = CRC8 CRC8Cfg (Maybe String)
+  = CRC8  CRC8Cfg  (Maybe String)
   | CRC16 CRC16Cfg (Maybe String)
   | CRC32 CRC32Cfg (Maybe String)
   | CRC64 CRC64Cfg (Maybe String)
