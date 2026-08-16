@@ -22,10 +22,9 @@ module Codec.Circe
   , CRC64Cfg, showCRC64Cfg
   , crc64ECMA182, crc64GoISO, crc64WE, crc64XZ
   , -- ** CRCCfg
-    CRCCfg(..)
-  , showCRCCfg
-  , -- ** Unsafe
-    crc, crcWithTable, crcUnsafe, crcTable
+    CRCCfg(..), showCRCCfg
+  , -- ** Internal
+    crcInternal, crcWithTable, crcUnsafe, crcStep, crcIdx, crcTable
   ) where
 
 import Codec.Circe.Pretty
@@ -40,16 +39,16 @@ import Data.Word
 
 -- | calculate CRC8 using lookup table generated from config
 crc8 :: CRC8Cfg -> ByteString -> Word8
-crc8 = crc ref8
+crc8 = crcInternal ref8
 -- | calculate CRC16 using lookup table generated from config
 crc16 :: CRC16Cfg -> ByteString -> Word16
-crc16 = crc ref16
+crc16 = crcInternal ref16
 -- | calculate CRC32 using lookup table generated from config
 crc32 :: CRC32Cfg -> ByteString -> Word32
-crc32 = crc ref32
+crc32 = crcInternal ref32
 -- | calculate CRC64 using lookup table generated from config
 crc64 :: CRC64Cfg -> ByteString -> Word64
-crc64 = crc ref64
+crc64 = crcInternal ref64
 
 -- | calculate CRC8 with precalculated poly table
 crc8WithTable :: Vector Word8 -> CRC8Cfg -> ByteString -> Word8
@@ -78,32 +77,31 @@ crc64Table :: Word64 -> [Word64]
 crc64Table = crcTable
 
 -- | calculate CRC using lookup table generated from config
-crc :: (FiniteBits a, Integral a, Num a, V.Storable a) => (a -> a) -> CRCCfg a -> ByteString -> a
-crc ref cfg = crcWithTable ref t cfg
+crcInternal :: (FiniteBits a, Integral a, Num a, V.Storable a) => (a -> a) -> CRCCfg a -> ByteString -> a
+crcInternal ref cfg = crcWithTable ref t cfg
   where
     t = V.fromList $ crcTable $ crcPoly cfg
 
 -- | calculate CRC with reflection & precalculated poly table.
 crcWithTable
   :: (FiniteBits a, Integral a, Num a, V.Storable a)
-  => (a -> a)
-  -> Vector a -> CRCCfg a -> ByteString -> a
+  => (a -> a) -> Vector a -> CRCCfg a -> ByteString -> a
 crcWithTable ref t cfg =
   xor (crcFinXor cfg) . applyWhen (crcRefOut cfg) ref . crcUnsafe t (crcRefIn cfg) (crcInit cfg)
 
 -- | calculate CRC using width, efficient lookup table, input reflection, and init value
 crcUnsafe :: (FiniteBits a, Integral a, Num a, V.Storable a) => Vector a -> Bool -> a -> ByteString -> a
-crcUnsafe t refIn = BS.foldl' $ \crc' -> crcStep t crc' . applyWhen refIn ref8
+crcUnsafe t refIn = BS.foldl' $ \crc -> crcStep t crc . applyWhen refIn ref8
 
 -- | single crc iteration with table and accumulator
 crcStep :: (FiniteBits a, Integral a, Num a, V.Storable a) => Vector a -> a -> Word8 -> a
-crcStep t crc' b = crc' `shiftL` 8 `xor` t `V.unsafeIndex` crcIdx crc' b
+crcStep t crc b = crc `shiftL` 8 `xor` t `V.unsafeIndex` crcIdx crc b
 
 -- | calculate lookup table index
 crcIdx :: (FiniteBits a, Integral a, Num a) => a -> Word8 -> Int
-crcIdx crc' b' = fromIntegral ((crc' `xor` fromIntegral b' `shiftL` w') `shiftR` w')
+crcIdx crc b' = fromIntegral ((crc `xor` fromIntegral b' `shiftL` w') `shiftR` w')
   where
-    w' = finiteBitSize crc' - 8
+    w' = finiteBitSize crc - 8
 
 -- | Generate CRC table using width and poly
 crcTable :: (FiniteBits a, Enum a, Num a) => a -> [a]
