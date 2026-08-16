@@ -1,6 +1,8 @@
 -- | CRC utilities.
 module Codec.Circe
-  ( -- ** CRC8
+  ( -- ** Config
+    CRCCfg(..)
+  , -- ** CRC8
     crc8, crc8WithTable, crc8Table
   , CRC8Cfg, showCRC8Cfg
   , crc8Cfg, crc88H2F, crc8CDMA2k, crc8DARC, crc8DVBS2, crc8EBU, crc8ICode
@@ -21,20 +23,11 @@ module Codec.Circe
     crc64, crc64WithTable, crc64Table
   , CRC64Cfg, showCRC64Cfg
   , crc64ECMA182, crc64GoISO, crc64WE, crc64XZ
-  , -- ** CRCCfg
-    CRCCfg(..), showCRCCfg
-  , -- ** Internal
-    crcInternal, crcWithTable, crcUnsafe, crcStep, crcIdx, crcTable
   ) where
 
-import Codec.Circe.Pretty
-import Codec.Circe.Reflect
-import Data.Bits
+import Codec.Circe.Internal
 import Data.ByteString.Lazy (ByteString)
-import qualified Data.ByteString.Lazy as BS
 import Data.Vector.Storable (Vector)
-import qualified Data.Vector.Storable as V
-import Data.Function
 import Data.Word
 
 -- | calculate CRC8 using lookup table generated from config
@@ -75,72 +68,6 @@ crc32Table = crcTable
 -- | generate CRC64 lookup table using polynomial
 crc64Table :: Word64 -> [Word64]
 crc64Table = crcTable
-
--- | calculate CRC using lookup table generated from config
-crcInternal :: (FiniteBits a, Integral a, Num a, V.Storable a) => (a -> a) -> CRCCfg a -> ByteString -> a
-crcInternal ref cfg = crcWithTable ref t cfg
-  where
-    t = V.fromList $ crcTable $ crcPoly cfg
-
--- | calculate CRC with reflection & precalculated poly table.
-crcWithTable
-  :: (FiniteBits a, Integral a, Num a, V.Storable a)
-  => (a -> a) -> Vector a -> CRCCfg a -> ByteString -> a
-crcWithTable ref t cfg =
-  xor (crcFinXor cfg) . applyWhen (crcRefOut cfg) ref . crcUnsafe t (crcRefIn cfg) (crcInit cfg)
-
--- | calculate CRC using width, efficient lookup table, input reflection, and init value
-crcUnsafe :: (FiniteBits a, Integral a, Num a, V.Storable a) => Vector a -> Bool -> a -> ByteString -> a
-crcUnsafe t refIn = BS.foldl' $ \crc -> crcStep t crc . applyWhen refIn ref8
-
--- | single crc iteration with table and accumulator
-crcStep :: (FiniteBits a, Integral a, Num a, V.Storable a) => Vector a -> a -> Word8 -> a
-crcStep t crc b = crc `shiftL` 8 `xor` t `V.unsafeIndex` crcIdx crc b
-
--- | calculate lookup table index
-crcIdx :: (FiniteBits a, Integral a, Num a) => a -> Word8 -> Int
-crcIdx crc b' = fromIntegral ((crc `xor` fromIntegral b' `shiftL` w') `shiftR` w')
-  where
-    w' = finiteBitSize crc - 8
-
--- | Generate CRC table using width and poly
-crcTable :: (FiniteBits a, Enum a, Num a) => a -> [a]
-crcTable poly = calc <$> [0..255]
-  where
-    l    = fromIntegral (finiteBitSize poly) :: Int
-    calc = (!! 8) . iterate step . (`shiftL` (l - 8))
-      where
-        step curByte = applyWhen (testBit curByte $ l - 1) (xor poly) $ curByte `shiftL` 1
-
--- | CRC configuration parameters
-data CRCCfg a = CRCCfg
-  { crcPoly :: a
-    -- ^ polynomial
-  , crcInit :: a
-    -- ^ initial value
-  , crcRefIn :: Bool
-    -- ^ reflect input
-  , crcRefOut :: Bool
-    -- ^ reflect output
-  , crcFinXor :: a
-    -- ^ final xor
-  }
-  deriving (Eq, Read, Show)
-
-instance Functor CRCCfg where
-  fmap f (CRCCfg p i ri ro x) = CRCCfg (f p) (f i) ri ro (f x)
-
--- | pretty cfg
-showCRCCfg :: CRCCfg String -> String
-showCRCCfg (CRCCfg p i ri ro x) = unwords ["POLY", p, "INIT", i, showRefl (ri, ro), "XOR", x]
-
--- | display reflection config
-showRefl :: (Bool, Bool) -> String
-showRefl (ri, ro) = case (ri, ro) of
-  (False, False) -> "NOREFL"
-  (False, True)  -> "REFLOUT"
-  (True,  False) -> "REFLIN"
-  (True,  True)  -> "REFLINOUT"
 
 -- | specialized CRC for 'Word8'
 type CRC8Cfg = CRCCfg Word8

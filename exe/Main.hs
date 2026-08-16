@@ -1,7 +1,7 @@
 module Main (main) where
 
 import Codec.Circe
-import Codec.Circe.Pretty
+import Codec.Circe.Internal
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as BS
 import Data.Version
