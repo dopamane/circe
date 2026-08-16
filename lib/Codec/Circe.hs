@@ -92,11 +92,11 @@ crcWithTable ref t cfg =
 
 -- | calculate CRC using width, efficient lookup table, input reflection, and init value
 crcUnsafe :: (FiniteBits a, Integral a, Num a, V.Storable a) => Vector a -> Bool -> a -> ByteString -> a
-crcUnsafe t refIn i = BS.foldl' go i
-  where
-    go crc' b = crc' `shiftL` 8 `xor` t `V.unsafeIndex` crcIdx crc' b'
-      where
-        b' = applyWhen refIn ref8 b
+crcUnsafe t refIn = BS.foldl' $ \crc' -> crcStep t crc' . applyWhen refIn ref8
+
+-- | single crc iteration with table and accumulator
+crcStep :: (FiniteBits a, Integral a, Num a, V.Storable a) => Vector a -> a -> Word8 -> a
+crcStep t crc' b = crc' `shiftL` 8 `xor` t `V.unsafeIndex` crcIdx crc' b
 
 -- | calculate lookup table index
 crcIdx :: (FiniteBits a, Integral a, Num a) => a -> Word8 -> Int
