@@ -1,5 +1,10 @@
 # Revision history for circe
 
+## 1.0.0.0 -- 8-16-26
+
+* Split internal and external API
+* Update tests
+
 ## 0.2.0.0 -- 8-14-26
 
 * CRC8 and CRC64 support
