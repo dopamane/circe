@@ -17,14 +17,14 @@ main = do
     CRC16Table p -> putStrLn $ table $ w16 <$> crc16Table p
     CRC32Table p -> putStrLn $ table $ w32 <$> crc32Table p
     CRC64Table p -> putStrLn $ table $ w64 <$> crc64Table p
-    CRC8  cfg fM -> putStrLn . w8  . crc8  cfg =<< input fM
-    CRC16 cfg fM -> putStrLn . w16 . crc16 cfg =<< input fM
-    CRC32 cfg fM -> putStrLn . w32 . crc32 cfg =<< input fM
-    CRC64 cfg fM -> putStrLn . w64 . crc64 cfg =<< input fM
+    CRC8  cfg fM -> stream fM $ w8  . crc8  cfg
+    CRC16 cfg fM -> stream fM $ w16 . crc16 cfg
+    CRC32 cfg fM -> stream fM $ w32 . crc32 cfg
+    CRC64 cfg fM -> stream fM $ w64 . crc64 cfg
 
-input :: Maybe String -> IO ByteString
-input Nothing     = BS.getContents
-input (Just file) = BS.readFile file
+stream :: Maybe String -> (ByteString -> String) -> IO ()
+stream Nothing     f = putStrLn . f =<< BS.getContents
+stream (Just file) f = putStrLn . f =<< BS.readFile file
 
 data CirceCLI
   = CRC8 CRC8Cfg (Maybe String)
@@ -54,30 +54,11 @@ parser = hsubparser $ mconcat
   , command "32" $ info crc32Parser $ progDesc "CRC32"
   , command "64" $ info crc64Parser $ progDesc "CRC64"
   ]
-
-crc8Parser :: Parser CirceCLI
-crc8Parser = asum
-  [ CRC8 <$> crc8CfgParser <*> optional fileArg
-  , CRC8Table <$> tableOpt 8
-  ]
-
-crc16Parser :: Parser CirceCLI
-crc16Parser = asum
-  [ CRC16 <$> crc16CfgParser <*> optional fileArg
-  , CRC16Table <$> tableOpt 16
-  ]
-
-crc32Parser :: Parser CirceCLI
-crc32Parser = asum
-  [ CRC32 <$> crc32CfgParser <*> optional fileArg
-  , CRC32Table <$> tableOpt 32
-  ]
-
-crc64Parser :: Parser CirceCLI
-crc64Parser = asum
-  [ CRC64 <$> crc64CfgParser <*> optional fileArg
-  , CRC64Table <$> tableOpt 64
-  ]
+  where
+    crc8Parser  = liftA2 CRC8  crc8CfgParser  (optional fileArg) <|> CRC8Table  `fmap` tableOpt 8
+    crc16Parser = liftA2 CRC16 crc16CfgParser (optional fileArg) <|> CRC16Table `fmap` tableOpt 16
+    crc32Parser = liftA2 CRC32 crc32CfgParser (optional fileArg) <|> CRC32Table `fmap` tableOpt 32
+    crc64Parser = liftA2 CRC64 crc64CfgParser (optional fileArg) <|> CRC64Table `fmap` tableOpt 64
 
 tableOpt :: (Num a, Read a) => Int -> Parser a
 tableOpt n = option auto $ mconcat
@@ -157,17 +138,10 @@ crcCfgParser =
   CRCCfg
     <$> option auto (short 'p' <> long "poly" <> help "polynomial")
     <*> option auto (short 'i' <> long "init" <> help "initial value")
-    <*> refinSwitch
-    <*> refoutSwitch
+    <*> switch (long "ri" <> long "refin" <> help "reflect input")
+    <*> switch (long "ro" <> long "refout" <> help "reflect output")
     <*> option auto (short 'x' <> long "xor" <> help "final xor")
 
-refinSwitch :: Parser Bool
-refinSwitch = switch $ long "ri" <> long "refin" <> help "reflect input"
-
-refoutSwitch :: Parser Bool
-refoutSwitch = switch $ long "ro" <> long "refout" <> help "reflect output"
-
 fileArg :: Parser String
-fileArg = strArgument $
-  metavar "FILE" <> completer (bashCompleter "file")
-    <> help "Optional binary input file otherwise stream STDIN."
+fileArg = strArgument $ metavar "FILE" <> completer (bashCompleter "file")
+  <> help "Optional binary input file otherwise stream STDIN."
