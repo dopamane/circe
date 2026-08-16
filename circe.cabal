@@ -20,7 +20,7 @@ source-repository head
 
 library
   default-language: Haskell2010
-  ghc-options:      -Wall -Wunused-packages -O2
+  ghc-options:      -Wall -Wunused-packages -O2 -rtsopts
   hs-source-dirs:   lib
   exposed-modules:
     Codec.Circe,
@@ -42,6 +42,7 @@ executable crc
     bytestring,
     circe,
     optparse-applicative,
+    vector
 
 test-suite test
   default-language: Haskell2010

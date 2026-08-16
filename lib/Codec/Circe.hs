@@ -57,16 +57,16 @@ crc64WithTable :: Vector Word64 -> CRC64Cfg -> ByteString -> Word64
 crc64WithTable = crcWithTable ref64
 
 -- | generate CRC8 lookup table using polynomial
-crc8Table :: Word8 -> [Word8]
+crc8Table :: Word8 -> Vector Word8
 crc8Table = crcTable
 -- | generate CRC16 lookup table using polynomial
-crc16Table :: Word16 -> [Word16]
+crc16Table :: Word16 -> Vector Word16
 crc16Table = crcTable
 -- | generate CRC32 lookup table using polynomial
-crc32Table :: Word32 -> [Word32]
+crc32Table :: Word32 -> Vector Word32
 crc32Table = crcTable
 -- | generate CRC64 lookup table using polynomial
-crc64Table :: Word64 -> [Word64]
+crc64Table :: Word64 -> Vector Word64
 crc64Table = crcTable
 
 -- | specialized CRC for 'Word8'

@@ -52,7 +52,7 @@ showRefl (ri, ro) = case (ri, ro) of
 crcInternal :: (FiniteBits a, Integral a, Num a, V.Storable a) => (a -> a) -> CRCCfg a -> ByteString -> a
 crcInternal ref cfg = crcWithTable ref t cfg
   where
-    t = V.fromList $ crcTable $ crcPoly cfg
+    t = crcTable $ crcPoly cfg
 
 -- | calculate CRC with reflection & precalculated poly table.
 crcWithTable
@@ -76,13 +76,12 @@ crcIdx crc b' = fromIntegral ((crc `xor` fromIntegral b' `shiftL` w') `shiftR` w
     w' = finiteBitSize crc - 8
 
 -- | Generate CRC table using width and poly
-crcTable :: (FiniteBits a, Enum a, Num a) => a -> [a]
-crcTable poly = calc <$> [0..255]
+crcTable :: (FiniteBits a, Num a, V.Storable a) => a -> Vector a
+crcTable poly = V.generate 256 $ \idx ->
+  V.unsafeLast $ V.iterateN 9 step $ fromIntegral idx `shiftL` (l - 8)
   where
-    l    = fromIntegral (finiteBitSize poly) :: Int
-    calc = (!! 8) . iterate step . (`shiftL` (l - 8))
-      where
-        step curByte = applyWhen (testBit curByte $ l - 1) (xor poly) $ curByte `shiftL` 1
+    l = fromIntegral (finiteBitSize poly) :: Int
+    step curByte = applyWhen (testBit curByte $ l - 1) (xor poly) $ curByte `shiftL` 1
 
 -- | @0x0a@
 w8 :: Word8 -> String

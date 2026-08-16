@@ -4,6 +4,7 @@ import Codec.Circe
 import Codec.Circe.Internal
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as BS
+import qualified Data.Vector.Storable as V
 import Data.Version
 import Data.Word
 import Options.Applicative
@@ -13,14 +14,17 @@ main :: IO ()
 main = do
   cli <- circeCLI $ showVersion version
   case cli of
-    CRC8Table  p -> putStrLn $ table $ w8  <$> crc8Table  p
-    CRC16Table p -> putStrLn $ table $ w16 <$> crc16Table p
-    CRC32Table p -> putStrLn $ table $ w32 <$> crc32Table p
-    CRC64Table p -> putStrLn $ table $ w64 <$> crc64Table p
+    CRC8Table  p -> display w8  $ crc8Table  p
+    CRC16Table p -> display w16 $ crc16Table p
+    CRC32Table p -> display w32 $ crc32Table p
+    CRC64Table p -> display w64 $ crc64Table p
     CRC8  cfg fM -> stream fM $ w8  . crc8  cfg
     CRC16 cfg fM -> stream fM $ w16 . crc16 cfg
     CRC32 cfg fM -> stream fM $ w32 . crc32 cfg
     CRC64 cfg fM -> stream fM $ w64 . crc64 cfg
+
+display :: V.Storable a => (a -> String) -> V.Vector a -> IO ()
+display f = putStrLn . table . map f . V.toList
 
 stream :: Maybe String -> (ByteString -> String) -> IO ()
 stream Nothing     f = putStrLn . f =<< BS.getContents
