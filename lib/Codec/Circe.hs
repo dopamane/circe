@@ -94,12 +94,15 @@ crcWithTable ref t cfg =
 crcUnsafe :: (FiniteBits a, Integral a, Num a, V.Storable a) => Vector a -> Bool -> a -> ByteString -> a
 crcUnsafe t refIn i = BS.foldl' go i
   where
-    go crc' b = crc' `shiftL` 8 `xor` t `V.unsafeIndex` fromIntegral pos
+    go crc' b = crc' `shiftL` 8 `xor` t `V.unsafeIndex` crcIdx crc' b'
       where
-        pos = fromIntegral ((crc' `xor` fromIntegral b' `shiftL` w') `shiftR` w') :: Word8
-          where
-            b' = applyWhen refIn ref8 b
-            w' = finiteBitSize i - 8
+        b' = applyWhen refIn ref8 b
+
+-- | calculate lookup table index
+crcIdx :: (FiniteBits a, Integral a, Num a) => a -> Word8 -> Int
+crcIdx crc' b' = fromIntegral ((crc' `xor` fromIntegral b' `shiftL` w') `shiftR` w')
+  where
+    w' = finiteBitSize crc' - 8
 
 -- | Generate CRC table using width and poly
 crcTable :: (FiniteBits a, Enum a, Num a) => a -> [a]
